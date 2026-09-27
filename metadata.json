@@ -1,0 +1,6 @@
+{
+  "name": "HackMate",
+  "description": "Find your people. Build something amazing. High-synergy hackathon team matchmaking platform for collegiate and competitive product sprints.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
