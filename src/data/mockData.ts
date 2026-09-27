@@ -1,4 +1,4 @@
-import { Developer, PendingRequest, Connection, UserProfile } from '../types';
+import { Developer, UserProfile } from '../types';
 
 export const currentUser: UserProfile = {
   name: 'Alex',
@@ -7,11 +7,17 @@ export const currentUser: UserProfile = {
   avatar: 'https://lh3.googleusercontent.com/aida/AEtjO1V2HFLVpW5OOo79UgNg-pG5cjvEhNWhhi7P76hfDWlNF0i5ca_wYd2kdl8uIxey1pU8kRCXnm6u51LUGJ4k23tUiwNhylK5cCVQuEk63Wvznw2gnD9RwOi3gUx2s8FuiPM_W_32iRlEAzrbPZnXWqnLwVG6EirmVIM1hM_04WRu25nI8jFK6IC9OgO5k6vwtqS7BBU6JjmyPnQwj7dqZ6A8rW4_V-p7CAyvsoGAwDCUICx_PIjhsZsIQ2tC',
   completionPercentage: 80,
   skills: ['React', 'TypeScript', 'FastAPI', 'Next.js', 'Tailwind CSS'],
+  interests: [],
   isCollegeVerified: true,
   trophies: [],
   seekingRole: 'Backend & AI Systems Specialist',
+  experienceLevel: 'Intermediate',
+  hackathonExperience: '',
+  lookingFor: '',
   bio: 'Full stack product builder focusing on responsive UI engineering, state machines, and real-time frontend architectures.',
-  targetEvent: 'CalHacks Spring 2025'
+  targetEvent: 'CalHacks Spring 2025',
+  githubUrl: '',
+  linkedinUrl: ''
 };
 
 export const initialDevelopers: Developer[] = [
@@ -154,118 +160,6 @@ export const initialDevelopers: Developer[] = [
     isOnline: true,
     statusText: 'Active now',
     connectionStatus: 'none'
-  }
-];
-
-export const initialPendingRequests: PendingRequest[] = [
-  {
-    id: 'req-kabir',
-    developer: {
-      ...initialDevelopers[3],
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAk401WwdWYNsrzi7qA0E2rHlZ3KJfPk8cqvQIYaTXX_v2a1SaV35wDweHJ3CUR8lYq9j96JDi8QTkKX57bYRp3Y8QbpY5fYogIBlcnWzPJRqMQDwph_XO27AGeSe1fsT7hZEedI9R1CI45vE-q7SKGOJkfq3KEQCM04s0Y5ZyAUsvZiSFIfMhrqc9_M40tJTuXDjxJuP9Tyo-E2CdAZJWF2dqXLr-S_GDNuBuwUqKf3cy1Cy1PJW3vzg'
-    },
-    category: 'Backend Specialist (Go / Kubernetes)',
-    message: '“Hey Alex, saw your frontend work on GitHub, want to team up for HackMIT?”',
-    timestamp: '2 hours ago',
-    status: 'pending'
-  },
-  {
-    id: 'req-dev',
-    developer: {
-      ...initialDevelopers[4],
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBg0emfWMXiZT1XNfpojJqB6q6wBPV_9LpTElnxiMa1aO05TBBeEv3OzGAB5fUiU-StoeoaGGYnKVj2qe3Kaeq-1oY9tdvamLDv_5TygZpm5Rz3EhQ-ZL27twrNlLFL8HGxLca0tiv8tBDhSZARasILD-58z8Wt-62RMKk4qOJ-VU7gQhjA4yM7wDLw_Xf0THIGcgg960yRFxQWVxBVJ14ONXAaz5lghNU6Ic7TOmaUbyK3b-ocl8X-sA'
-    },
-    category: 'Mobile Developer / Flutter',
-    message: '“Targeting the Mobile FinTech category for CalHacks. We need your Next.js dashboard chops!”',
-    timestamp: '5 hours ago',
-    status: 'pending'
-  }
-];
-
-export const initialConnections: Connection[] = [
-  {
-    id: 'conn-elena',
-    developer: {
-      id: 'elena-rostova',
-      name: 'Elena Rostova',
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuClIcFHCu54Xlfghw9j0V-H__FJI4ZcAppt6ibqDLBil-sdLmZ2yKzxQwNNyHANEYIT3MhKiAH8NQC3CgMBpV4RSaWaibBOta8hlh3kQPTun67MXDh7J8nUKV4jIMryjIB63Yf3Ow2X1SWzVChxNnQcaNjgWGih0rHk98QDbididg-fRPsGKK4zNkxHcUq_vc_VQ7Vei3XPtLcVpB_r_0Hd6FinBJ6xCFWBbCFD5rHQiHSOMdyQnOaPeQ',
-      university: 'MIT',
-      classYear: "'25",
-      major: 'Computer Science',
-      location: 'Cambridge, MA',
-      matchScore: 91,
-      experienceLevel: 'Advanced',
-      hackathonCount: 6,
-      roles: ['Full Stack'],
-      topSkills: ['React', 'Next.js', 'Go', 'GraphQL'],
-      allSkills: ['React', 'Next.js', 'Go', 'GraphQL', 'PostgreSQL', 'Docker'],
-      tracks: ['HealthTech', 'Open Source'],
-      bio: 'Full-stack builder passionate about rapid prototyping and accessible medical telemetry.',
-      matchReasonType: 'Complementary',
-      matchReasonText: 'Vetted partner from TreeHacks 2024.',
-      weeklyHours: 20,
-      isOnline: true,
-      statusText: 'Available for CalHacks'
-    },
-    status: 'Full Stack • Available for CalHacks',
-    lastMessage: 'Let’s sync on Discord tonight regarding the API schema!',
-    lastMessageTime: '10m ago'
-  },
-  {
-    id: 'conn-marcus',
-    developer: {
-      id: 'marcus-chen',
-      name: 'Marcus Chen',
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXpTXrMSuCkEif4Qgo0CyW5HIzc9ObllTfhjZTK1nrBI_B7V7haRHgAvctA_5lUPUtqTtzGciMnm3ykeoTuKtZy0Ziu5DUPBg59toCOYm_xa-chiQHa6XoCFOB36LFJ50SOnMU7GGmFh3phxadfK12Ivd8T1E6Vo_-vYMRlxGaA57FhI4FWxKdjKLRmyMAFeMaTBoMXfRX0XK0395dzn_A9-31zsGuLlxVb47wkyYs7L8TBnW2luscFQ',
-      university: 'CMU',
-      classYear: "'25",
-      major: 'Electrical & Computer Engineering',
-      location: 'Pittsburgh, PA',
-      matchScore: 87,
-      experienceLevel: 'Advanced',
-      hackathonCount: 8,
-      roles: ['Backend', 'Systems'],
-      topSkills: ['Rust', 'C++', 'Embedded', 'WebAssembly'],
-      allSkills: ['Rust', 'C++', 'Embedded', 'WebAssembly', 'Linux', 'RTOS'],
-      tracks: ['Hardware + API Track', 'Robotics'],
-      bio: 'Low-latency systems architect. Building custom hardware firmware and WebAssembly drivers.',
-      matchReasonType: 'Skill Complement',
-      matchReasonText: 'Hardware driver integration expert.',
-      weeklyHours: 18,
-      isOnline: false,
-      statusText: 'Team Formed'
-    },
-    status: 'Systems Engineer • Team Formed',
-    lastMessage: 'Got the ESP32 board flashed with the demo payload.',
-    lastMessageTime: '3h ago'
-  },
-  {
-    id: 'conn-priya',
-    developer: {
-      id: 'priya-nair',
-      name: 'Priya Nair',
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQnTisj15zgbt95CYLnYKC2xgHlBAxhp2PUQWEu8H4t0H4t75lxcTSpWmm8MMWjB06dYZpaUr5PcHXpMt2IYkgUm7GHLCBj9kJY-QIcFZwDeMP4drvrh9Vm_B5bB_j_-_ankivcgjeZBXydrZ8IrUNod0dPsYQLESHJwHyHRslEzKo4yBG6VQPhtUmE7dlpfNyN6fi-c6gwBLgp8BY4U_mC8uiFeEILRCwDvEPHtHEwW1xdXjKZyAl-Q',
-      university: 'Columbia University',
-      classYear: "'26",
-      major: 'Economics & CS',
-      location: 'New York, NY',
-      matchScore: 85,
-      experienceLevel: 'Intermediate',
-      hackathonCount: 4,
-      roles: ['Product', 'Frontend'],
-      topSkills: ['Product Design', 'Pitching', 'Next.js', 'Storytelling'],
-      allSkills: ['Product Design', 'Pitching', 'Next.js', 'Figma', 'Market Sizing'],
-      tracks: ['FinTech', 'Consumer Apps'],
-      bio: 'Product strategist and hackathon pitch champion. 3x best pitch recipient.',
-      matchReasonType: 'Complementary',
-      matchReasonText: 'Pitch and slide deck specialist.',
-      weeklyHours: 15,
-      isOnline: true,
-      statusText: 'Searching 1 Dev'
-    },
-    status: 'Product & Pitch • Searching 1 Dev',
-    lastMessage: 'Reviewed the demo flow, looks incredibly crisp!',
-    lastMessageTime: '1d ago'
   }
 ];
 

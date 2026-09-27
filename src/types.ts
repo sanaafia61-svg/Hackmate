@@ -7,13 +7,18 @@ export interface Developer {
   major?: string;
   location: string;
   matchScore: number;
-  experienceLevel: 'Beginner' | 'Intermediate' | 'Advanced';
+  experienceLevel: string;
   hackathonCount: number;
   trophies?: string[];
   roles: string[];
   seekingRoles?: string;
   topSkills: string[];
   allSkills: string[];
+  interests?: string[];
+  hackathonExperience?: string;
+  lookingFor?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
   tracks: string[];
   bio: string;
   matchReasonType: 'Complementary' | 'Shared Interest' | 'Skill Complement' | 'Why you match' | 'Complementary role match' | 'Compatibility note' | 'Complementary profile';
@@ -25,7 +30,20 @@ export interface Developer {
   githubUsername?: string;
   isOnline: boolean;
   statusText?: string;
-  connectionStatus?: 'none' | 'requested' | 'connected';
+  connectionStatus?: 'none' | 'requested' | 'outgoing-pending' | 'incoming-pending' | 'connected';
+  connectionRequestId?: string;
+}
+
+export type ConnectionRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+export type ConnectionAction = 'connect' | 'accept' | 'reject' | 'cancel';
+
+export interface ConnectionRequestRecord {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  status: ConnectionRequestStatus;
+  developer: Developer;
+  createdAt: string;
 }
 
 export interface PendingRequest {
@@ -64,9 +82,15 @@ export interface UserProfile {
   avatar: string;
   completionPercentage: number;
   skills: string[];
+  interests: string[];
   isCollegeVerified: boolean;
   trophies: string[];
   seekingRole: string;
+  experienceLevel: string;
+  hackathonExperience: string;
+  lookingFor: string;
   bio: string;
   targetEvent: string;
+  githubUrl: string;
+  linkedinUrl: string;
 }

@@ -5,7 +5,7 @@ interface ProfileModalProps {
   user: UserProfile;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updated: UserProfile) => void;
+  onSave: (updated: UserProfile) => void | Promise<void>;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -14,29 +14,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   onSave
 }) => {
-  const [trophies, setTrophies] = useState<string[]>(
-    user.trophies.length > 0
-      ? user.trophies
-      : ['CalHacks 10.0 Best Frontend', 'HackMIT 2024 Finalist']
-  );
-  const [newTrophy, setNewTrophy] = useState('');
+  const [name, setName] = useState(user.name);
+  const [avatar, setAvatar] = useState(user.avatar);
   const [skills, setSkills] = useState<string[]>(user.skills);
   const [newSkill, setNewSkill] = useState('');
+  const [interests, setInterests] = useState<string[]>(user.interests);
+  const [newInterest, setNewInterest] = useState('');
+  const [university, setUniversity] = useState(user.university);
+  const [githubUrl, setGithubUrl] = useState(user.githubUrl);
+  const [linkedinUrl, setLinkedinUrl] = useState(user.linkedinUrl);
+  const [experienceLevel, setExperienceLevel] = useState(user.experienceLevel);
+  const [seekingRole, setSeekingRole] = useState(user.seekingRole);
+  const [hackathonExperience, setHackathonExperience] = useState(user.hackathonExperience);
+  const [lookingFor, setLookingFor] = useState(user.lookingFor);
   const [bio, setBio] = useState(user.bio);
-  const [targetEvent, setTargetEvent] = useState(user.targetEvent);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen) return null;
-
-  const handleAddTrophy = () => {
-    if (newTrophy.trim() && !trophies.includes(newTrophy.trim())) {
-      setTrophies([...trophies, newTrophy.trim()]);
-      setNewTrophy('');
-    }
-  };
-
-  const handleRemoveTrophy = (t: string) => {
-    setTrophies(trophies.filter((item) => item !== t));
-  };
 
   const handleAddSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -49,17 +44,41 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     setSkills(skills.filter((item) => item !== s));
   };
 
-  const handleSave = () => {
+  const handleAddInterest = () => {
+    const interest = newInterest.trim();
+    if (interest && !interests.includes(interest)) {
+      setInterests([...interests, interest]);
+      setNewInterest('');
+    }
+  };
+
+  const handleSave = async () => {
+    setSaveError(null);
+    setIsSaving(true);
     const updated: UserProfile = {
       ...user,
-      trophies,
+      name,
+      avatar,
+      university,
+      githubUrl,
+      linkedinUrl,
+      experienceLevel,
+      seekingRole,
+      hackathonExperience,
+      lookingFor,
       skills,
+      interests,
       bio,
-      targetEvent,
-      completionPercentage: trophies.length > 0 ? 100 : 80
+      completionPercentage: 0
     };
-    onSave(updated);
-    onClose();
+    try {
+      await onSave(updated);
+      onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -78,53 +97,44 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white tracking-tight">Complete Builder Dossier</h2>
-            <p className="text-xs text-zinc-400">Unlock 100% Priority Matching for CalHacks 2025</p>
+            <p className="text-xs text-zinc-400">Keep your public builder profile up to date.</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-5 max-h-[60vh] overflow-y-auto pr-1">
-          {/* Trophies Section */}
-          <div className="p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-white font-mono uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-amber-400">emoji_events</span>
-                <span>Hackathon Trophies (+20% Completion)</span>
-              </label>
-              <span className="text-[10px] font-mono text-emerald-400">Required for 100%</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-full-name">Full name</label>
+              <input id="profile-full-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
             </div>
-
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {trophies.map((trophy) => (
-                <span
-                  key={trophy}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-700 text-xs text-zinc-200"
-                >
-                  <span>{trophy}</span>
-                  <button
-                    onClick={() => handleRemoveTrophy(trophy)}
-                    className="hover:text-red-400 text-zinc-500 cursor-pointer ml-1"
-                  >
-                    <span className="material-symbols-outlined text-[13px]">close</span>
-                  </button>
-                </span>
-              ))}
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-college">College</label>
+              <input id="profile-college" value={university} onChange={(e) => setUniversity(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
             </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newTrophy}
-                onChange={(e) => setNewTrophy(e.target.value)}
-                placeholder="e.g. TreeHacks 2024 AI Track Winner..."
-                className="flex-1 px-3 py-1.5 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddTrophy}
-                className="px-3.5 py-1.5 bg-white text-black font-semibold text-xs rounded-xl hover:bg-zinc-200 cursor-pointer"
-              >
-                Add Trophy
-              </button>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-avatar">Avatar URL</label>
+              <input id="profile-avatar" type="url" value={avatar} onChange={(e) => setAvatar(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-experience">Experience</label>
+              <select id="profile-experience" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500">
+                <option value="">Select experience</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-role">Preferred role</label>
+              <input id="profile-role" value={seekingRole} onChange={(e) => setSeekingRole(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-github">GitHub URL</label>
+              <input id="profile-github" type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-linkedin">LinkedIn URL</label>
+              <input id="profile-linkedin" type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
             </div>
           </div>
 
@@ -165,6 +175,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Interests</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {interests.map((interest) => (
+                <span key={interest} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
+                  {interest}
+                  <button type="button" aria-label={`Remove ${interest}`} onClick={() => setInterests(interests.filter((item) => item !== interest))} className="text-zinc-500 hover:text-red-400">
+                    <span className="material-symbols-outlined text-[12px]">close</span>
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input type="text" value={newInterest} onChange={(e) => setNewInterest(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddInterest(); } }} placeholder="Add an interest..." className="flex-1 px-3 py-1.5 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500" />
+              <button type="button" onClick={handleAddInterest} className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono rounded-xl cursor-pointer">Add</button>
+            </div>
+          </div>
+
           {/* Bio */}
           <div>
             <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Personal Bio & Project Ambition</label>
@@ -176,26 +204,23 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             />
           </div>
 
-          {/* Target Event */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Primary Target Hackathon</label>
-            <select
-              value={targetEvent}
-              onChange={(e) => setTargetEvent(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500"
-            >
-              <option value="CalHacks Spring 2025">CalHacks Spring 2025 (San Francisco, CA)</option>
-              <option value="HackMIT 2025">HackMIT 2025 (Cambridge, MA)</option>
-              <option value="TreeHacks 2025">TreeHacks 2025 (Stanford, CA)</option>
-            </select>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-hackathon-experience">Hackathon experience</label>
+            <textarea id="profile-hackathon-experience" rows={2} value={hackathonExperience} onChange={(e) => setHackathonExperience(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-looking-for">Looking for</label>
+            <textarea id="profile-looking-for" rows={2} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
+          </div>
+
         </div>
 
         <div className="flex items-center justify-between pt-5 border-t border-zinc-800/80 mt-6">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             <span className="font-mono text-xs text-zinc-400">
-              Projected Score: {trophies.length > 0 ? '100% (Priority Match Ready)' : '80%'}
+              Profile Completion: based on your profile details
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -207,12 +232,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-colors shadow-md cursor-pointer"
+              disabled={isSaving}
+              className="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-colors shadow-md cursor-pointer disabled:opacity-60"
             >
-              Save Profile
+              {isSaving ? 'Saving...' : 'Save Profile'}
             </button>
           </div>
         </div>
+        {saveError && <p className="mt-3 text-right text-xs text-red-400" role="alert">Unable to save profile: {saveError}</p>}
       </div>
     </div>
   );

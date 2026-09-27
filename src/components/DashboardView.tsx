@@ -1,19 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Developer, PendingRequest, Connection, UserProfile } from '../types';
+import React from 'react';
+import { ConnectionAction, Developer, PendingRequest, Connection, UserProfile } from '../types';
 
 interface DashboardViewProps {
   user: UserProfile;
   matches: Developer[];
   pendingRequests: PendingRequest[];
   connections: Connection[];
+  outgoingRequestCount: number;
+  isAuthenticated: boolean;
+  networkStatus: 'loading' | 'ready' | 'error';
+  networkError: string | null;
+  matchesLoading: boolean;
+  matchesError: string | null;
+  pendingActionIds: string[];
   onBrowseAll: () => void;
   onOpenMatchPreferences: () => void;
   onCompleteProfile: () => void;
   onViewDeveloper: (dev: Developer) => void;
-  onConnectDeveloper: (devId: string) => void;
+  onConnectionAction: (devId: string, action: ConnectionAction, requestId?: string) => void;
   onAcceptRequest: (reqId: string) => void;
   onDeclineRequest: (reqId: string) => void;
-  onOpenChat: (conn: Connection) => void;
+  onViewConnectionProfile: (conn: Connection) => void;
   onManageConnections: () => void;
 }
 
@@ -22,41 +29,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   matches,
   pendingRequests,
   connections,
+  outgoingRequestCount,
+  isAuthenticated,
+  networkStatus,
+  networkError,
+  matchesLoading,
+  matchesError,
+  pendingActionIds,
   onBrowseAll,
   onOpenMatchPreferences,
   onCompleteProfile,
   onViewDeveloper,
-  onConnectDeveloper,
+  onConnectionAction,
   onAcceptRequest,
   onDeclineRequest,
-  onOpenChat,
+  onViewConnectionProfile,
   onManageConnections
 }) => {
-  // Live countdown timer state
-  const [countdown, setCountdown] = useState({
-    days: 12,
-    hours: 18,
-    minutes: 45,
-    seconds: 22
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else {
-          return { ...prev, days: Math.max(0, prev.days - 1), hours: 23, minutes: 59, seconds: 59 };
-        }
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <div className="w-full pt-20 pb-16 bg-background min-h-[calc(100vh-64px)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col w-full gap-8">
@@ -66,15 +55,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800/90 text-zinc-300 font-mono text-[11px] tracking-wide mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="uppercase tracking-widest text-zinc-400">CalHacks 2025 Roster Window Open</span>
+                    <span className="uppercase tracking-widest text-zinc-400">{isAuthenticated ? 'Your HackMate dashboard' : 'HackMate demo dashboard'}</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
                 Welcome back, {user.name} 👋
               </h1>
               <p className="text-sm text-zinc-400 mt-1.5 font-normal">
-                Let&apos;s find your next teammate. You have{' '}
+                Let&apos;s find your next teammate. There are{' '}
                 <span className="text-zinc-100 font-medium underline underline-offset-4 decoration-emerald-500/50">
-                  {matches.length} new match suggestions
+                  {matches.length} developer suggestions
                 </span>{' '}
                 tailored to your technical profile.
               </p>
@@ -94,7 +83,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 type="button"
               >
                 <span className="material-symbols-outlined text-[16px]">explore</span>
-                <span>Browse All (84)</span>
+                <span>Browse All ({matches.length})</span>
               </button>
             </div>
           </div>
@@ -127,34 +116,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="material-symbols-outlined text-[15px] text-zinc-400">info</span>
                   <span>
                     {user.completionPercentage === 100
-                      ? 'Profile 100% complete! Priority Matching algorithm is now actively prioritizing your squad placement.'
-                      : 'Add your past hackathon projects to reach 100% and unlock Priority Matching.'}
+                      ? 'Your profile fields are complete.'
+                      : 'Add more profile details to improve your profile completion.'}
                   </span>
                 </div>
                 {/* Verification / Readiness Checklist Chips */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
                     <span className="material-symbols-outlined text-[14px] text-emerald-400">check_circle</span>
-                    Skills Added ({user.skills.slice(0, 3).join(', ')})
+                    {user.skills.length > 0 ? `Skills Added (${user.skills.length})` : 'No skills added'}
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
                     <span className="material-symbols-outlined text-[14px] text-emerald-400">school</span>
-                    College Verified ({user.university})
+                    {user.university ? `College: ${user.university}` : 'College not added'}
                   </span>
-                  {user.completionPercentage < 100 ? (
-                    <button
-                      onClick={onCompleteProfile}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-amber-300 font-mono text-[11px] cursor-pointer transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[14px] text-amber-400">military_tech</span>
-                      <span>Missing Hackathon Trophies (+20%)</span>
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
-                      <span className="material-symbols-outlined text-[14px] text-emerald-400">military_tech</span>
-                      Trophies Verified ({user.trophies.length} Trophies)
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono text-[11px]">
+                    {user.interests.length} interests listed
+                  </span>
                 </div>
               </div>
 
@@ -188,7 +166,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {matches.length} Recommended
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">Derived from your tech stack, availability, and target challenges.</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Sorted using a simple profile-based compatibility estimate.</p>
             </div>
             <div className="inline-flex items-center self-start sm:self-auto gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono text-[11px]">
               <span className="material-symbols-outlined text-[14px] text-emerald-400">auto_awesome</span>
@@ -196,9 +174,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
+          {matchesLoading && <p className="text-sm text-zinc-400" role="status">Loading developer profiles...</p>}
+          {matchesError && <p className="text-sm text-red-300" role="alert">Unable to load developer profiles: {matchesError}</p>}
+          {!matchesLoading && !matchesError && matches.length === 0 && <p className="rounded-xl border border-zinc-800 bg-[#0c0d12] p-6 text-sm text-zinc-400">No other developer profiles are available yet.</p>}
+
           {/* 3 Match Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {matches.map((dev) => (
+            {!matchesLoading && !matchesError && matches.map((dev) => (
               <article
                 key={dev.id}
                 className="flex flex-col justify-between rounded-2xl bg-[#0c0d12] border border-zinc-800/80 p-5 hover:border-zinc-700 transition-all duration-200 group"
@@ -221,7 +203,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      <span>{dev.matchScore}% MATCH</span>
+                      <span>{dev.matchScore}% COMPATIBILITY</span>
                     </div>
                   </div>
 
@@ -231,7 +213,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {dev.name}
                     </h3>
                     <p className="text-xs text-zinc-400">
-                      {dev.major || 'Computer Science'} • {dev.university}
+                      {dev.university}
                     </p>
                   </div>
 
@@ -241,8 +223,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {dev.experienceLevel === 'Advanced' ? 'emoji_events' : 'code_blocks'}
                     </span>
                     <span>
-                      {dev.experienceLevel} • {dev.hackathonCount} Hackathons
-                      {dev.trophies && dev.trophies.length > 0 ? ` • ${dev.trophies.length}x Winner` : ''}
+                      {dev.experienceLevel}{dev.hackathonExperience ? ` • ${dev.hackathonExperience}` : ''}
                     </span>
                   </div>
 
@@ -281,19 +262,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 {/* Action Buttons: Connect (White Pill) + View Profile (Dark Border Pill) */}
                 <div className="flex items-center gap-2 pt-2">
+                  {dev.connectionStatus === 'incoming-pending' && <button onClick={() => onConnectionAction(dev.id, 'reject', dev.connectionRequestId)} type="button" className="rounded-full border border-zinc-700 px-3 py-2 text-xs text-zinc-300">Reject</button>}
+                  {dev.connectionStatus === 'outgoing-pending' && <span className="rounded-full border border-zinc-700 px-3 py-2 font-mono text-xs text-zinc-300">Pending</span>}
                   <button
-                    onClick={() => onConnectDeveloper(dev.id)}
-                    className={`flex-1 py-2 px-3 rounded-full font-mono text-xs font-semibold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer ${
-                      dev.connectionStatus === 'requested'
-                        ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-white text-black hover:bg-zinc-200'
-                    }`}
+                    disabled={pendingActionIds.includes(dev.connectionRequestId || dev.id) || dev.connectionStatus === 'connected'}
+                    onClick={() => onConnectionAction(dev.id, dev.connectionStatus === 'incoming-pending' ? 'accept' : dev.connectionStatus === 'outgoing-pending' || dev.connectionStatus === 'requested' ? 'cancel' : 'connect', dev.connectionRequestId)}
+                    className={`flex-1 py-2 px-3 rounded-full font-mono text-xs font-semibold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${dev.connectionStatus === 'connected' || dev.connectionStatus === 'outgoing-pending' ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/30' : 'bg-white text-black hover:bg-zinc-200'}`}
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[15px]">
-                      {dev.connectionStatus === 'requested' ? 'check' : 'person_add'}
-                    </span>
-                    <span>{dev.connectionStatus === 'requested' ? 'Requested' : 'Connect'}</span>
+                    <span>{pendingActionIds.includes(dev.connectionRequestId || dev.id) ? 'Saving...' : dev.connectionStatus === 'connected' ? 'Connected' : dev.connectionStatus === 'incoming-pending' ? 'Accept' : dev.connectionStatus === 'outgoing-pending' || dev.connectionStatus === 'requested' ? 'Cancel' : isAuthenticated ? 'Connect' : 'Sign in to connect'}</span>
                   </button>
                   <button
                     onClick={() => onViewDeveloper(dev)}
@@ -322,7 +299,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="font-mono text-xs text-zinc-400">Incoming invitations</span>
             </div>
 
-            {pendingRequests
+            {networkStatus === 'loading' && <p className="text-sm text-zinc-400" role="status">Loading requests...</p>}
+            {networkStatus === 'error' && <p className="text-xs text-red-300" role="alert">Unable to load connection requests. Run `supabase/connection_requests.sql` in the Supabase SQL Editor if needed. {networkError}</p>}
+            {networkStatus === 'ready' && pendingRequests
               .filter((r) => r.status === 'pending')
               .map((req) => (
                 <div
@@ -365,7 +344,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               ))}
 
-            {pendingRequests.filter((r) => r.status === 'pending').length === 0 && (
+            {networkStatus === 'ready' && pendingRequests.filter((r) => r.status === 'pending').length === 0 && (
               <div className="rounded-2xl bg-[#0c0d12] border border-zinc-800/60 p-8 text-center flex flex-col items-center justify-center">
                 <span className="material-symbols-outlined text-zinc-500 text-3xl mb-2">inbox</span>
                 <p className="text-sm text-zinc-300 font-medium">All caught up!</p>
@@ -395,35 +374,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Right Column: Hackathon Countdown & Active Connections (5 Cols) */}
           <div className="lg:col-span-5 flex flex-col gap-4">
-            {/* Technical Hackathon Countdown Card */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#0c0d12] border border-zinc-800/80 p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-white font-mono text-[10px] uppercase tracking-wider">
-                  <span className="material-symbols-outlined text-[12px] text-emerald-400">hourglass_top</span>
-                  Upcoming Hackathon
-                </span>
-                <span className="font-mono text-[10px] text-zinc-400 tracking-wide">Track 04: Open Source</span>
-              </div>
-              <h3 className="text-base font-semibold text-white tracking-tight mt-1 mb-1">
-                CalHacks Spring 2025
-              </h3>
-              <p className="text-xs text-zinc-400 mb-4">
-                12 Days Left to finalize rosters and claim your AWS build credits.
-              </p>
-
-              {/* Technical Monochrome Countdown Blocks */}
-              <div className="grid grid-cols-3 gap-2 text-center bg-black/40 border border-zinc-800/70 p-3 rounded-xl tabular-nums">
-                <div>
-                  <div className="font-mono text-xl font-semibold text-white">{countdown.days}</div>
-                  <div className="font-mono text-[10px] uppercase text-zinc-400 tracking-wider">Days</div>
+            <div className="rounded-2xl bg-[#0c0d12] border border-zinc-800/80 p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-white tracking-tight">Network Snapshot</h3>
+              <p className="text-xs text-zinc-400 mt-1 mb-4">Current connection activity for your account.</p>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-black/40 border border-zinc-800/70 p-3">
+                  <div className="font-mono text-xl font-semibold text-white">{networkStatus === 'ready' ? connections.length : networkStatus === 'loading' ? '...' : '—'}</div>
+                  <div className="font-mono text-[10px] uppercase text-zinc-400">Connected</div>
                 </div>
-                <div>
-                  <div className="font-mono text-xl font-semibold text-white">{countdown.hours}</div>
-                  <div className="font-mono text-[10px] uppercase text-zinc-400 tracking-wider">Hours</div>
+                <div className="rounded-xl bg-black/40 border border-zinc-800/70 p-3">
+                  <div className="font-mono text-xl font-semibold text-white">{networkStatus === 'ready' ? pendingRequests.filter((request) => request.status === 'pending').length : networkStatus === 'loading' ? '...' : '—'}</div>
+                  <div className="font-mono text-[10px] uppercase text-zinc-400">Incoming</div>
                 </div>
-                <div>
-                  <div className="font-mono text-xl font-semibold text-white">{countdown.minutes}</div>
-                  <div className="font-mono text-[10px] uppercase text-zinc-400 tracking-wider">Mins</div>
+                <div className="rounded-xl bg-black/40 border border-zinc-800/70 p-3">
+                  <div className="font-mono text-xl font-semibold text-white">{networkStatus === 'ready' ? outgoingRequestCount : networkStatus === 'loading' ? '...' : '—'}</div>
+                  <div className="font-mono text-[10px] uppercase text-zinc-400">Outgoing</div>
                 </div>
               </div>
             </div>
@@ -436,7 +401,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <p className="text-xs text-zinc-400">Vetted teammates in your circle</p>
                 </div>
                 <span className="px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-400">
-                  {connections.length + 11} Total
+                  {networkStatus === 'ready' ? `${connections.length} Total` : networkStatus === 'loading' ? 'Loading' : 'Unavailable'}
                 </span>
               </div>
 
@@ -459,12 +424,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                     </div>
                     <button
-                      onClick={() => onOpenChat(conn)}
-                      aria-label={`Message ${conn.developer.name}`}
+                      onClick={() => onViewConnectionProfile(conn)}
+                      aria-label={`View ${conn.developer.name}'s profile`}
                       className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
                       type="button"
                     >
-                      <span className="material-symbols-outlined text-[17px]">chat_bubble_outline</span>
+                      <span className="material-symbols-outlined text-[17px]">account_circle</span>
                     </button>
                   </div>
                 ))}
@@ -476,7 +441,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className="w-full py-2.5 px-3 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 font-mono text-xs font-medium transition-all flex items-center justify-center gap-2 group cursor-pointer"
                 type="button"
               >
-                <span>Manage All {connections.length + 11} Connections</span>
+                <span>Manage All {connections.length} Connections</span>
                 <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">
                   arrow_forward
                 </span>

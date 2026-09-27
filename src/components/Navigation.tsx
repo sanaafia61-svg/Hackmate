@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile } from '../types';
+import type { AuthMode } from './AuthModal';
 
 interface NavigationProps {
   currentView: 'landing' | 'dashboard' | 'discover' | 'connections' | 'profile';
   setCurrentView: (view: 'landing' | 'dashboard' | 'discover' | 'connections' | 'profile') => void;
   user: UserProfile;
+  userEmail: string;
+  isAuthenticated: boolean;
+  onOpenAuth: (mode: AuthMode) => void;
+  onSignOut: () => void;
+  onEditProfile: () => void;
+  incomingRequestNames: string[];
   unreadCount?: number;
   onOpenTeammatesSearch?: () => void;
   onOpenNotifications?: () => void;
@@ -14,6 +21,12 @@ export const Navigation: React.FC<NavigationProps> = ({
   currentView,
   setCurrentView,
   user,
+  userEmail,
+  isAuthenticated,
+  onOpenAuth,
+  onSignOut,
+  onEditProfile,
+  incomingRequestNames,
   unreadCount = 2,
   onOpenTeammatesSearch
 }) => {
@@ -148,7 +161,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#0e0f14] border border-zinc-800 p-4 shadow-2xl z-50 text-left">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-white font-mono uppercase tracking-wider">Alerts & Sprints</span>
+                    <span className="text-xs font-semibold text-white font-mono uppercase tracking-wider">Connection Requests</span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 font-mono text-[10px]">
                       {unreadCount} New
                     </span>
@@ -161,54 +174,43 @@ export const Navigation: React.FC<NavigationProps> = ({
                   </button>
                 </div>
                 <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto">
-                  <div
-                    onClick={() => {
-                      setCurrentView('dashboard');
-                      setShowNotifications(false);
-                    }}
-                    className="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/60 hover:border-zinc-700 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 mb-1">
-                      <span>INCOMING TEAM INVITE</span>
-                      <span className="text-zinc-500">2h ago</span>
-                    </div>
-                    <p className="text-xs text-white font-medium">Kabir Singh requested to connect for HackMIT</p>
-                    <p className="text-[11px] text-zinc-400 mt-1 italic line-clamp-1">"Hey Alex, saw your frontend work on GitHub..."</p>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setCurrentView('dashboard');
-                      setShowNotifications(false);
-                    }}
-                    className="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/60 hover:border-zinc-700 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 mb-1">
-                      <span>CALHACKS ALERT</span>
-                      <span className="text-zinc-500">5h ago</span>
-                    </div>
-                    <p className="text-xs text-white font-medium">Dev Malhotra invited you to Mobile FinTech track</p>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setCurrentView('connections');
-                      setShowNotifications(false);
-                    }}
-                    className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-800/40 hover:border-zinc-700 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 mb-1">
-                      <span>NEW MESSAGE</span>
-                      <span className="text-zinc-500">10m ago</span>
-                    </div>
-                    <p className="text-xs text-zinc-200">Elena Rostova: "Let's sync on Discord tonight regarding the API schema!"</p>
-                  </div>
+                  {incomingRequestNames.length > 0 ? incomingRequestNames.map((name) => (
+                    <button
+                      key={name}
+                      onClick={() => {
+                        setCurrentView('connections');
+                        setShowNotifications(false);
+                      }}
+                      className="rounded-xl border border-zinc-800/60 bg-zinc-900/70 p-2.5 text-left text-xs text-white hover:border-zinc-700"
+                      type="button"
+                    >
+                      {name} sent you a connection request.
+                    </button>
+                  )) : <p className="p-2 text-xs text-zinc-400">No incoming connection requests.</p>}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Profile Menu Dropdown */}
+          {!isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <button
+                className="rounded-full px-3 py-1.5 font-mono text-xs text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"
+                onClick={() => onOpenAuth('login')}
+                type="button"
+              >
+                Sign in
+              </button>
+              <button
+                className="rounded-full bg-white px-3.5 py-1.5 font-mono text-xs font-semibold text-black transition-colors hover:bg-zinc-200"
+                onClick={() => onOpenAuth('signup')}
+                type="button"
+              >
+                Sign up
+              </button>
+            </div>
+          ) : (
+          /* Profile Menu Dropdown */
           <div className="relative" ref={menuRef}>
             <div
               onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -231,8 +233,18 @@ export const Navigation: React.FC<NavigationProps> = ({
               <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0e0f14] border border-zinc-800 p-2 shadow-2xl z-50 font-sans">
                 <div className="px-3 py-2 border-b border-zinc-800/70 mb-1">
                   <p className="text-xs font-semibold text-white">{user.name}</p>
-                  <p className="text-[11px] text-zinc-400 font-mono">{user.university}</p>
+                  <p className="text-[11px] text-zinc-400 font-mono break-all">{userEmail}</p>
                 </div>
+                <button
+                  onClick={() => {
+                    onEditProfile();
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
+                  <span>Edit Profile</span>
+                </button>
                 <button
                   onClick={() => {
                     setCurrentView('profile');
@@ -263,14 +275,25 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <span className="material-symbols-outlined text-[16px]">public</span>
                   <span>Public Landing Page</span>
                 </button>
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    onSignOut();
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">logout</span>
+                  <span>Sign out</span>
+                </button>
                 <div className="h-px bg-zinc-800 my-1"></div>
                 <div className="px-3 py-1.5 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>CalHacks Match Ready</span>
+                  <span>HackMate Account</span>
                 </div>
               </div>
             )}
           </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -288,6 +311,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#09090c] border-b border-zinc-800 px-6 py-4 flex flex-col gap-3 font-mono text-xs">
+          {isAuthenticated && <div className="border-b border-zinc-800 pb-3 text-zinc-400 break-all">{userEmail}</div>}
           <button
             onClick={() => {
               setCurrentView('landing');
@@ -333,6 +357,17 @@ export const Navigation: React.FC<NavigationProps> = ({
           >
             My Profile
           </button>
+          {isAuthenticated ? (
+            <>
+              <button onClick={() => { onEditProfile(); setMobileMenuOpen(false); }} className="text-left py-2 text-zinc-300 hover:text-white">Edit Profile</button>
+              <button onClick={() => { onSignOut(); setMobileMenuOpen(false); }} className="text-left py-2 text-zinc-300 hover:text-white">Sign out</button>
+            </>
+          ) : (
+            <div className="flex gap-3 border-t border-zinc-800 pt-3">
+              <button onClick={() => { onOpenAuth('login'); setMobileMenuOpen(false); }} className="py-2 text-zinc-300 hover:text-white">Sign in</button>
+              <button onClick={() => { onOpenAuth('signup'); setMobileMenuOpen(false); }} className="py-2 text-zinc-300 hover:text-white">Sign up</button>
+            </div>
+          )}
         </div>
       )}
     </header>

@@ -1,24 +1,33 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Developer, FilterState } from '../types';
+import { ConnectionAction, Developer } from '../types';
+import { hackathonCountFromText } from '../lib/profileData';
 
 interface DiscoverViewProps {
   developers: Developer[];
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  pendingActionIds: string[];
+  onConnectionAction: (devId: string, action: ConnectionAction, requestId?: string) => void;
   onViewDeveloper: (dev: Developer) => void;
-  onConnectDeveloper: (devId: string) => void;
 }
 
 export const DiscoverView: React.FC<DiscoverViewProps> = ({
   developers,
+  isAuthenticated,
+  isLoading,
+  error,
+  pendingActionIds,
+  onConnectionAction,
   onViewDeveloper,
-  onConnectDeveloper
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(['Frontend', 'Backend']);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(['React', 'Python', 'PyTorch']);
-  const [selectedExp, setSelectedExp] = useState<string>('Intermediate');
-  const [selectedUniversity, setSelectedUniversity] = useState<string>('Top Hackathon Schools (Tier 1)');
-  const [selectedTrack, setSelectedTrack] = useState<string>('HealthTech');
-  const [pastHackathons, setPastHackathons] = useState<string>('3 - 5');
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedExp, setSelectedExp] = useState<string>('');
+  const [selectedUniversity, setSelectedUniversity] = useState<string>('Any Affiliation');
+  const [selectedTrack, setSelectedTrack] = useState<string>('Any Interest');
+  const [pastHackathons, setPastHackathons] = useState<string>('Any');
   const [sortBy, setSortBy] = useState<string>('Compatibility (Highest)');
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [showTip, setShowTip] = useState<boolean>(true);
@@ -51,21 +60,23 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
   const resetFilters = () => {
     setSearchQuery('');
-    setSelectedRoles(['Frontend', 'Backend']);
-    setSelectedSkills(['React', 'Python', 'PyTorch']);
-    setSelectedExp('Intermediate');
-    setSelectedUniversity('Top Hackathon Schools (Tier 1)');
-    setSelectedTrack('HealthTech');
-    setPastHackathons('3 - 5');
+    setSelectedRoles([]);
+    setSelectedSkills([]);
+    setSelectedExp('');
+    setSelectedUniversity('Any Affiliation');
+    setSelectedTrack('Any Interest');
+    setPastHackathons('Any');
     setActiveQuickRole('All Roles');
   };
 
   const filteredDevelopers = useMemo(() => {
     let result = [...developers];
 
-    // Quick role filter
+    const includesText = (values: string[], query: string) =>
+      values.some((value) => value.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+
     if (activeQuickRole !== 'All Roles') {
-      result = result.filter((d) => d.roles.includes(activeQuickRole));
+      result = result.filter((d) => includesText(d.roles, activeQuickRole));
     }
 
     // Search query
@@ -76,26 +87,48 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           d.name.toLowerCase().includes(q) ||
           d.university.toLowerCase().includes(q) ||
           d.allSkills.some((s) => s.toLowerCase().includes(q)) ||
-          d.tracks.some((t) => t.toLowerCase().includes(q)) ||
-          d.bio.toLowerCase().includes(q)
+          (d.interests || []).some((interest) => interest.toLowerCase().includes(q)) ||
+          d.bio.toLowerCase().includes(q) ||
+          (d.lookingFor || '').toLowerCase().includes(q) ||
+          (d.hackathonExperience || '').toLowerCase().includes(q)
       );
     }
 
     // Role filtering from sidebar
     if (selectedRoles.length > 0 && activeQuickRole === 'All Roles') {
-      result = result.filter((d) => d.roles.some((r) => selectedRoles.includes(r)));
+      result = result.filter((d) => selectedRoles.some((role) => includesText(d.roles, role)));
     }
 
     // Experience filter
     if (selectedExp) {
-      result = result.filter((d) => d.experienceLevel === selectedExp);
+      result = result.filter((d) => d.experienceLevel.toLocaleLowerCase() === selectedExp.toLocaleLowerCase());
     }
 
     // Skills filter
     if (selectedSkills.length > 0) {
-      result = result.filter((d) =>
-        d.allSkills.some((s) => selectedSkills.includes(s))
-      );
+      result = result.filter((d) => d.allSkills.some((skill) =>
+        selectedSkills.some((selected) => skill.toLocaleLowerCase() === selected.toLocaleLowerCase())
+      ));
+    }
+
+    if (selectedUniversity === 'UC System (Berkeley, UCLA, UCSD)') {
+      result = result.filter((developer) => /berkeley|ucla|ucsd|university of california/i.test(developer.university));
+    } else if (selectedUniversity === 'Ivy League + MIT/Stanford') {
+      result = result.filter((developer) => /harvard|yale|princeton|columbia|penn|brown|cornell|dartmouth|mit|stanford/i.test(developer.university));
+    } else if (selectedUniversity === 'Top Hackathon Schools (Tier 1)') {
+      result = result.filter((developer) => /stanford|mit|berkeley|waterloo|georgia tech|cmu|caltech|ut austin/i.test(developer.university));
+    }
+
+    if (selectedTrack !== 'Any Interest') {
+      result = result.filter((developer) => includesText(developer.interests || [], selectedTrack));
+    }
+    if (pastHackathons !== 'Any') {
+      result = result.filter((developer) => {
+        const count = hackathonCountFromText(developer.hackathonExperience || '');
+        if (pastHackathons === '1 - 2') return count >= 1 && count <= 2;
+        if (pastHackathons === '3 - 5') return count >= 3 && count <= 5;
+        return count >= 6;
+      });
     }
 
     // Sort
@@ -103,12 +136,12 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       result.sort((a, b) => b.matchScore - a.matchScore);
     } else if (sortBy === 'Hackathons Attended') {
       result.sort((a, b) => b.hackathonCount - a.hackathonCount);
-    } else if (sortBy === 'Response Rate') {
-      result.sort((a, b) => (b.weeklyHours || 0) - (a.weeklyHours || 0));
+    } else if (sortBy === 'Preferred Role') {
+      result.sort((a, b) => (a.seekingRoles || '').localeCompare(b.seekingRoles || ''));
     }
 
     return result;
-  }, [developers, searchQuery, selectedRoles, selectedSkills, selectedExp, activeQuickRole, sortBy]);
+  }, [developers, searchQuery, selectedRoles, selectedSkills, selectedExp, selectedUniversity, selectedTrack, pastHackathons, activeQuickRole, sortBy]);
 
   const displayedDevelopers = filteredDevelopers.slice(0, visibleCount);
 
@@ -121,7 +154,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono text-[11px] mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>142 Active Hackers Looking for Teams</span>
+                <span>{isAuthenticated ? `${developers.length} developer profiles` : 'Demo developer profiles'}</span>
               </div>
               <h1 className="text-3xl md:text-4xl text-white tracking-tight font-semibold">
                 Find your HackMate
@@ -134,13 +167,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             {/* Quick Status Metric Summary */}
             <div className="hidden lg:flex items-center gap-5 bg-[#0c0d12] px-5 py-3 rounded-2xl border border-white/[0.08]">
               <div className="flex flex-col">
-                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Average Match</span>
-                <span className="text-lg text-emerald-400 font-semibold font-mono">89.4%</span>
+                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Profiles Shown</span>
+                <span className="text-lg text-emerald-400 font-semibold font-mono">{developers.length}</span>
               </div>
               <div className="w-px h-7 bg-zinc-800"></div>
               <div className="flex flex-col">
-                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Target Event</span>
-                <span className="text-sm text-zinc-200 font-medium">CalHacks 11.0</span>
+                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Matches</span>
+                <span className="text-sm text-zinc-200 font-medium">{filteredDevelopers.length} found</span>
               </div>
             </div>
           </div>
@@ -174,7 +207,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                   >
                     <option value="Compatibility (Highest)">Sort: Compatibility (Highest)</option>
                     <option value="Hackathons Attended">Sort: Hackathons Attended</option>
-                    <option value="Response Rate">Sort: Response Rate</option>
+                    <option value="Preferred Role">Sort: Preferred Role</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none text-[18px]">
                     unfold_more
@@ -216,7 +249,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 College: All
               </button>
               <button
-                onClick={() => setSelectedExp('Intermediate')}
+                onClick={() => setSelectedExp('')}
                 className="px-3 py-1 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 text-xs font-medium transition-colors cursor-pointer"
               >
                 Experience: All
@@ -375,6 +408,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 onChange={(e) => setSelectedUniversity(e.target.value)}
                 className="w-full bg-zinc-900/90 p-2.5 rounded-xl text-xs text-zinc-200 border border-zinc-800 focus:outline-none focus:border-zinc-500 cursor-pointer mt-0.5"
               >
+                <option value="Any Affiliation">Any Affiliation</option>
                 <option value="Top Hackathon Schools (Tier 1)">Top Hackathon Schools (Tier 1)</option>
                 <option value="UC System (Berkeley, UCLA, UCSD)">UC System (Berkeley, UCLA, UCSD)</option>
                 <option value="Ivy League + MIT/Stanford">Ivy League + MIT/Stanford</option>
@@ -386,7 +420,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-zinc-300">Preferred Track</label>
               <div className="flex flex-wrap gap-1.5 mt-0.5">
-                {['Generative AI', 'FinTech', 'HealthTech', 'ClimateTech', 'Web3', 'EdTech'].map((track) => {
+                {['Any Interest', 'Generative AI', 'FinTech', 'HealthTech', 'ClimateTech', 'Web3', 'EdTech'].map((track) => {
                   const isTrackActive = selectedTrack === track;
                   return (
                     <button
@@ -410,7 +444,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-zinc-300">Past Hackathons</label>
               <div className="grid grid-cols-3 gap-1.5 mt-0.5 text-center font-mono text-xs">
-                {['1 - 2', '3 - 5', '6+'].map((range) => (
+                {['Any', '1 - 2', '3 - 5', '6+'].map((range) => (
                   <button
                     key={range}
                     onClick={() => setPastHackathons(range)}
@@ -466,8 +500,16 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
               </div>
             )}
 
+            {isLoading && <div className="rounded-2xl bg-[#0c0d12] p-8 text-center text-sm text-zinc-400" role="status">Loading developer profiles...</div>}
+            {error && (
+              <div className="rounded-2xl border border-red-900/60 bg-[#0c0d12] p-8 text-center" role="alert">
+                <h3 className="text-sm font-medium text-red-300">Unable to load developer profiles</h3>
+                <p className="mt-2 break-words text-xs text-zinc-400">{error}</p>
+              </div>
+            )}
+
             {/* Candidate Cards */}
-            {displayedDevelopers.map((dev) => (
+            {!isLoading && !error && displayedDevelopers.map((dev) => (
               <article
                 key={dev.id}
                 className="bg-[#0c0d12] rounded-2xl p-5 border border-white/[0.08] hover:border-zinc-700 transition-all flex flex-col gap-4 shadow-sm group"
@@ -478,7 +520,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                       <img
                         className="w-14 h-14 rounded-xl object-cover ring-1 ring-white/10"
                         alt={dev.name}
-                        src={dev.avatar}
+                        src={dev.avatar || undefined}
                       />
                       <span
                         className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full ring-2 ring-black ${
@@ -490,20 +532,19 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-base text-white font-semibold tracking-tight">{dev.name}</h3>
                         <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-400">
-                          {dev.university.split(' ')[0]} {dev.classYear || "'26"}
+                          {dev.university.split(' ')[0]} {dev.classYear || ''}
                         </span>
                       </div>
                       <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
                         <span className="material-symbols-outlined text-[14px] text-zinc-500">location_on</span>
-                        {dev.location} • {dev.major || 'Computer Science'}
+                        {dev.university}
                       </p>
                       <div className="flex items-center gap-2 mt-1.5 text-xs">
                         <span className="inline-flex items-center gap-1 text-zinc-300 font-medium">
                           <span className="material-symbols-outlined text-[13px] text-zinc-400">
                             {dev.experienceLevel === 'Advanced' ? 'emoji_events' : 'military_tech'}
                           </span>
-                          {dev.experienceLevel} ({dev.hackathonCount} Hackathons
-                          {dev.trophies && dev.trophies.length > 0 ? `, ${dev.trophies[0]}` : ''})
+                          {dev.experienceLevel}{dev.hackathonExperience ? ` • ${dev.hackathonExperience}` : ''}
                         </span>
                         {dev.seekingRoles && (
                           <>
@@ -521,7 +562,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                   <div className="self-start sm:self-auto flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/50 text-emerald-400 font-mono text-xs">
                     <span className="material-symbols-outlined text-[14px]">bolt</span>
                     <span className="font-semibold">{dev.matchScore}%</span>
-                    <span className="text-[10px] uppercase tracking-wide">Match</span>
+                    <span className="text-[10px] uppercase tracking-wide">Compatibility</span>
                   </div>
                 </div>
 
@@ -532,8 +573,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-start gap-2.5">
                   <span className="material-symbols-outlined text-emerald-400 text-[18px] mt-0.5">check_circle</span>
                   <p className="text-xs text-zinc-400 leading-normal">
-                    <strong className="text-zinc-200 font-medium">{dev.matchReasonType}: </strong>
-                    {dev.matchReasonText}
+                    <strong className="text-zinc-200 font-medium">Compatibility: </strong>
+                    This simple estimate compares profile skills, interests, experience, and preferred role.
                   </p>
                 </div>
 
@@ -551,24 +592,23 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                     ))}
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest w-14">Tracks:</span>
-                    {dev.tracks.map((track) => (
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest w-14">Interests:</span>
+                    {(dev.interests || []).map((interest) => (
                       <span
-                        key={track}
+                        key={interest}
                         className="px-2 py-0.5 rounded-md bg-zinc-900/80 border border-zinc-800 text-[11px] text-zinc-400"
                       >
-                        {track}
+                        {interest}
                       </span>
                     ))}
+                    {(dev.interests || []).length === 0 && <span className="text-xs text-zinc-500">No interests listed</span>}
                   </div>
                 </div>
 
                 {/* Card Footprint & Action Buttons */}
                 <div className="flex items-center justify-between pt-2 border-t border-zinc-900">
                   <div className="flex items-center gap-2 text-zinc-500 text-xs font-mono">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">schedule</span> {dev.weeklyHours} hrs/wk
-                    </span>
+                    {dev.weeklyHours > 0 && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> {dev.weeklyHours} hrs/wk</span>}
                     {dev.reposCount && (
                       <>
                         <span>•</span>
@@ -593,25 +633,34 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                     >
                       View Profile
                     </button>
-                    <button
-                      onClick={() => onConnectDeveloper(dev.id)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
-                        dev.connectionStatus === 'requested'
-                          ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-white hover:bg-zinc-200 text-black'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">
-                        {dev.connectionStatus === 'requested' ? 'check' : 'person_add'}
-                      </span>
-                      <span>{dev.connectionStatus === 'requested' ? 'Requested' : 'Connect'}</span>
-                    </button>
+                    {(() => {
+                      const status = dev.connectionStatus || 'none';
+                      const action = status === 'incoming-pending' ? 'accept'
+                        : status === 'outgoing-pending' || status === 'requested' ? 'cancel' : 'connect';
+                      const requestPending = pendingActionIds.includes(dev.connectionRequestId || dev.id);
+                      const label = status === 'connected' ? 'Connected'
+                        : status === 'incoming-pending' ? 'Accept'
+                        : action === 'cancel' ? 'Cancel' : isAuthenticated ? 'Connect' : 'Sign in to connect';
+                      return <>
+                        {status === 'incoming-pending' && <button disabled={requestPending} onClick={() => onConnectionAction(dev.id, 'reject', dev.connectionRequestId)} className="px-3 py-1.5 rounded-full text-xs text-zinc-300 border border-zinc-700 disabled:opacity-50" type="button">Reject</button>}
+                        {(status === 'outgoing-pending' || status === 'requested') && <span className="px-2 py-1.5 font-mono text-[11px] text-zinc-400">Pending</span>}
+                        <button
+                          disabled={requestPending || status === 'connected'}
+                          onClick={() => onConnectionAction(dev.id, action, dev.connectionRequestId)}
+                          className={`px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${status === 'outgoing-pending' || status === 'requested' || status === 'connected' ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/30' : 'bg-white hover:bg-zinc-200 text-black'}`}
+                          type="button"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">{requestPending ? 'hourglass_top' : status === 'connected' || action === 'accept' ? 'check' : action === 'cancel' ? 'schedule' : 'person_add'}</span>
+                          <span>{requestPending ? 'Saving...' : label}</span>
+                        </button>
+                      </>;
+                    })()}
                   </div>
                 </div>
               </article>
             ))}
 
-            {displayedDevelopers.length === 0 && (
+            {!isLoading && !error && displayedDevelopers.length === 0 && (
               <div className="bg-[#0c0d12] rounded-2xl p-12 border border-white/[0.08] text-center flex flex-col items-center justify-center">
                 <span className="material-symbols-outlined text-zinc-500 text-4xl mb-3">search_off</span>
                 <h3 className="text-base text-white font-medium">No developers match your current filters</h3>
@@ -634,7 +683,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                   <p className="text-zinc-400">
                     Showing <strong className="text-white font-semibold">{displayedDevelopers.length}</strong> of{' '}
-                    <strong className="text-white font-semibold">142</strong> candidate builders
+                    <strong className="text-white font-semibold">{filteredDevelopers.length}</strong> matching profiles
                   </p>
                 </div>
                 {visibleCount < filteredDevelopers.length && (

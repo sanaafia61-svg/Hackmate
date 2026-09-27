@@ -23,7 +23,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="flex items-center gap-5">
               <div className="relative">
                 <img
-                  src={user.avatar}
+                  src={user.avatar || undefined}
                   alt={user.name}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-zinc-700/80 shadow-md"
                 />
@@ -37,18 +37,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-zinc-400 font-mono mt-1">
-                  {user.major} • {user.university}
+                  {user.university || 'Add your college'}
                 </p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-emerald-300">
-                    <span className="material-symbols-outlined text-[13px] text-emerald-400">verified</span>
-                    College Verified (UCSD .edu)
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
-                    <span className="material-symbols-outlined text-[13px] text-zinc-400">lock_clock</span>
-                    Roster Ready
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -71,20 +61,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {/* Dossier Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
             <div className="space-y-4">
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500">Target Hackathon</h3>
+              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500">Hackathon Experience</h3>
               <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-sm font-semibold text-white">{user.targetEvent}</p>
-                <p className="text-xs text-zinc-400 mt-1">Track 04: Open Source & Distributed AI</p>
-                <div className="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-emerald-400">
-                  <span>AWS Credits: $2,500</span>
-                  <span>Active</span>
-                </div>
+                <p className="text-sm font-semibold text-white">{user.hackathonExperience || 'Not added yet'}</p>
               </div>
 
               <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Desired Squad Role</h3>
               <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-sm font-semibold text-white">{user.seekingRole}</p>
-                <p className="text-xs text-zinc-400 mt-1">Priority: Distributed backend and real-time frontend integration.</p>
+                <p className="text-sm font-semibold text-white">{user.seekingRole || 'No preferred role selected'}</p>
               </div>
             </div>
 
@@ -99,45 +83,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     {skill}
                   </span>
                 ))}
+                {user.skills.length === 0 && <span className="text-xs text-zinc-500">No skills added yet.</span>}
               </div>
 
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">
-                Hackathon Trophies &amp; Track Record
-              </h3>
+              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Interests</h3>
+              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-wrap gap-2">
+                {user.interests.length > 0 ? user.interests.map((interest) => (
+                  <span key={interest} className="px-3 py-1 rounded-md bg-zinc-900 border border-zinc-700/80 font-mono text-xs text-zinc-200">{interest}</span>
+                )) : <span className="text-xs text-zinc-500">No interests added yet.</span>}
+              </div>
+
+              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Experience</h3>
               <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                {user.trophies.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.trophies.map((trophy, i) => (
-                      <div
-                        key={i}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-amber-500/20 text-xs text-zinc-200"
-                      >
-                        <span className="material-symbols-outlined text-[16px] text-amber-400">emoji_events</span>
-                        <span>{trophy}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-amber-300 font-medium">No verified trophies linked yet</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Add past finishes or hackathons to complete 100% of your profile.
-                      </p>
-                    </div>
-                    <button
-                      onClick={onEditProfile}
-                      className="px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-200 cursor-pointer"
-                    >
-                      + Add Trophy
-                    </button>
-                  </div>
-                )}
+                <p className="text-xs sm:text-sm text-zinc-300">{user.experienceLevel || 'Not specified'}</p>
               </div>
 
               <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">About & Bio</h3>
               <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans">{user.bio}</p>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans">{user.bio || 'No bio added yet.'}</p>
+              </div>
+
+              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Looking for</h3>
+              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{user.lookingFor || 'Add what kind of teammates or projects you are looking for.'}</p>
+              </div>
+
+              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Links</h3>
+              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-wrap gap-4 text-xs">
+                {user.githubUrl && <a className="text-zinc-200 hover:text-white underline" href={user.githubUrl} target="_blank" rel="noreferrer">GitHub</a>}
+                {user.linkedinUrl && <a className="text-zinc-200 hover:text-white underline" href={user.linkedinUrl} target="_blank" rel="noreferrer">LinkedIn</a>}
+                {!user.githubUrl && !user.linkedinUrl && <span className="text-zinc-500">No links added yet.</span>}
               </div>
             </div>
           </div>
