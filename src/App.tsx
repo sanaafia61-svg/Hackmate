@@ -28,6 +28,7 @@ type RequestAction = ConnectionAction;
 
 export default function App() {
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const authUserIdRef = useRef<string | null>(null);
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [currentView, setCurrentView] = useState<
@@ -54,10 +55,13 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    let receivedAuthEvent = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      receivedAuthEvent = true;
       const nextAuthUser = session?.user ?? null;
       authUserIdRef.current = nextAuthUser?.id ?? null;
       setAuthUser(nextAuthUser);
+      setAuthLoading(false);
 
       if (nextAuthUser) {
         setUser(emptyProfile(nextAuthUser));
@@ -77,7 +81,22 @@ export default function App() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    void supabase.auth.getSession()
+      .then(({ data }) => {
+        if (!receivedAuthEvent) {
+          const sessionUser = data.session?.user ?? null;
+          authUserIdRef.current = sessionUser?.id ?? null;
+          setAuthUser(sessionUser);
+          setAuthLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!receivedAuthEvent) setAuthLoading(false);
+      });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -307,6 +326,18 @@ export default function App() {
   const topMatches = [...developers].sort((left, right) => right.matchScore - left.matchScore).slice(0, 3);
 
   const handleViewConnectionProfile = (connection: Connection) => setSelectedDeveloper(connection.developer);
+
+  if (authLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#050507] text-sm text-zinc-400" role="status">
+        Checking your session...
+      </main>
+    );
+  }
+
+  if (!authUser) {
+    return <AuthModal fullPage initialMode="login" isOpen onClose={() => undefined} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#050507] text-[#e3e1ec] font-sans flex flex-col selection:bg-zinc-800 selection:text-white">
