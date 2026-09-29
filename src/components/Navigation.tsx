@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { UserProfile } from '../types';
 import type { AuthMode } from './AuthModal';
+import { AnimalAvatar } from './AnimalAvatar';
+
+export type ThemeMode = 'light' | 'dark';
 
 interface NavigationProps {
   currentView: 'landing' | 'dashboard' | 'discover' | 'connections' | 'profile';
   setCurrentView: (view: 'landing' | 'dashboard' | 'discover' | 'connections' | 'profile') => void;
   user: UserProfile;
+  profileId: string;
   userEmail: string;
   isAuthenticated: boolean;
   onOpenAuth: (mode: AuthMode) => void;
@@ -15,12 +20,15 @@ interface NavigationProps {
   unreadCount?: number;
   onOpenTeammatesSearch?: () => void;
   onOpenNotifications?: () => void;
+  theme: ThemeMode;
+  onToggleTheme: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   currentView,
   setCurrentView,
   user,
+  profileId,
   userEmail,
   isAuthenticated,
   onOpenAuth,
@@ -28,7 +36,9 @@ export const Navigation: React.FC<NavigationProps> = ({
   onEditProfile,
   incomingRequestNames,
   unreadCount = 2,
-  onOpenTeammatesSearch
+  onOpenTeammatesSearch,
+  theme,
+  onToggleTheme
 }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -127,6 +137,16 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* Right Zone: Primary Actions, Notifications, Profile */}
         <div className="flex items-center gap-3">
+          <button
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700/70 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
+            onClick={onToggleTheme}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            type="button"
+          >
+            {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+          </button>
+
           {/* Find Teammates Button */}
           <button
             onClick={() => {
@@ -217,11 +237,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               className="flex items-center gap-1.5 pl-2 py-1 rounded-full hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition-all cursor-pointer"
             >
               <div className="relative">
-                <img
-                  alt={`${user.name} Profile`}
-                  className="w-8 h-8 rounded-full object-cover border border-zinc-700/60"
-                  src={user.avatar}
-                />
+                <AnimalAvatar profileId={profileId} name={user.name} className="h-8 w-8 border border-zinc-700/60 text-lg" />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-black"></span>
               </div>
               <span className="material-symbols-outlined text-[16px] text-zinc-400">

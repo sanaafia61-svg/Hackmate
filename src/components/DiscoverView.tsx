@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ConnectionAction, Developer } from '../types';
 import { hackathonCountFromText } from '../lib/profileData';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface DiscoverViewProps {
   developers: Developer[];
@@ -517,11 +518,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                   <div className="flex items-start gap-3.5">
                     <div className="relative shrink-0">
-                      <img
-                        className="w-14 h-14 rounded-xl object-cover ring-1 ring-white/10"
-                        alt={dev.name}
-                        src={dev.avatar || undefined}
-                      />
+                      <AnimalAvatar profileId={dev.id} name={dev.name} className="h-14 w-14 text-3xl ring-1 ring-white/10" />
                       <span
                         className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full ring-2 ring-black ${
                           dev.isOnline ? 'bg-emerald-500' : 'bg-zinc-500'

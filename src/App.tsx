@@ -18,6 +18,7 @@ import { ProfileModal } from './components/ProfileModal';
 import { MatchPreferencesModal } from './components/MatchPreferencesModal';
 import { Footer } from './components/Footer';
 import { AuthModal, AuthMode } from './components/AuthModal';
+import type { ThemeMode } from './components/Navigation';
 import { supabase } from './lib/supabaseClient';
 import { calculateCompatibility } from './lib/compatibility';
 import { developerFromProfile, emptyProfile, profileCompletion, profileFromRow, profileToRow, publicProfileColumns, ProfileRow } from './lib/profileData';
@@ -27,6 +28,9 @@ type ProfileStatus = 'loading' | 'ready' | 'error';
 type RequestAction = ConnectionAction;
 
 export default function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() =>
+    window.localStorage.getItem('hackmate-theme') === 'dark' ? 'dark' : 'light'
+  );
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const authUserIdRef = useRef<string | null>(null);
@@ -53,6 +57,11 @@ export default function App() {
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('hackmate-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     let receivedAuthEvent = false;
@@ -346,6 +355,7 @@ export default function App() {
         currentView={currentView}
         setCurrentView={setCurrentView}
         user={user}
+        profileId={authUser?.id || user.name}
         isAuthenticated={authUser !== null}
         userEmail={authUser?.email || ''}
         onOpenAuth={setAuthMode}
@@ -354,6 +364,8 @@ export default function App() {
         incomingRequestNames={incomingRequests.map((request) => request.developer.name)}
         unreadCount={incomingRequests.length}
         onOpenTeammatesSearch={() => setCurrentView('discover')}
+        theme={theme}
+        onToggleTheme={() => setTheme((currentTheme) => currentTheme === 'light' ? 'dark' : 'light')}
       />
 
       {/* Main View Router */}
@@ -433,6 +445,7 @@ export default function App() {
         {currentView === 'profile' && (
           <ProfileView
             user={user}
+            profileId={authUser?.id || user.name}
             onEditProfile={() => setIsProfileModalOpen(true)}
             onBrowseMatches={() => setCurrentView('discover')}
           />
@@ -458,6 +471,7 @@ export default function App() {
       {isProfileModalOpen && (
         <ProfileModal
           user={user}
+            profileId={authUser?.id || user.name}
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           onSave={handleSaveProfile}

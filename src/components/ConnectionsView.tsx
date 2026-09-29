@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Connection, ConnectionAction, ConnectionRequestRecord, Developer } from '../types';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface ConnectionsViewProps {
   connections: Connection[];
@@ -16,7 +17,7 @@ interface ConnectionsViewProps {
 const PersonSummary: React.FC<{ developer: Developer; action: React.ReactNode; onViewDeveloper: (developer: Developer) => void }> = ({ developer, action, onViewDeveloper }) => (
   <article className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-zinc-800/80 bg-[#0c0d12] p-4">
     <div className="flex min-w-0 items-center gap-3">
-      <img src={developer.avatar || undefined} alt="" className="h-11 w-11 shrink-0 rounded-full border border-zinc-700/60 object-cover" />
+      <AnimalAvatar profileId={developer.id} name={developer.name} className="h-11 w-11 shrink-0 border border-zinc-700/60 text-2xl" />
       <div className="min-w-0">
         <h3 className="truncate text-sm font-semibold text-white">{developer.name}</h3>
         <p className="truncate text-xs text-zinc-400">{developer.university}</p>

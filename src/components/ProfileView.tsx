@@ -1,14 +1,17 @@
 import React from 'react';
 import { UserProfile } from '../types';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface ProfileViewProps {
   user: UserProfile;
+  profileId: string;
   onEditProfile: () => void;
   onBrowseMatches: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   user,
+  profileId,
   onEditProfile,
   onBrowseMatches
 }) => {
@@ -22,11 +25,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-8 border-b border-zinc-800/70">
             <div className="flex items-center gap-5">
               <div className="relative">
-                <img
-                  src={user.avatar || undefined}
-                  alt={user.name}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-zinc-700/80 shadow-md"
-                />
+                <AnimalAvatar profileId={profileId} name={user.name} className="h-20 w-20 border-2 border-zinc-700/80 text-5xl shadow-md sm:h-24 sm:w-24" />
                 <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-4 ring-[#0c0d12]"></span>
               </div>
               <div>

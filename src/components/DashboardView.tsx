@@ -1,5 +1,6 @@
 import React from 'react';
 import { ConnectionAction, Developer, PendingRequest, Connection, UserProfile } from '../types';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface DashboardViewProps {
   user: UserProfile;
@@ -189,11 +190,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {/* Header: Avatar + Compatibility Badge */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="relative">
-                      <img
-                        className="w-[52px] h-[52px] rounded-full object-cover border border-zinc-700/60"
-                        alt={dev.name}
-                        src={dev.avatar}
-                      />
+                      <AnimalAvatar profileId={dev.id} name={dev.name} className="h-[52px] w-[52px] border border-zinc-700/60 text-3xl" />
                       <span
                         className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-[#0c0d12] ${
                           dev.isOnline ? 'bg-emerald-400' : 'bg-zinc-500'
@@ -309,11 +306,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   className="rounded-2xl bg-[#0c0d12] border border-zinc-800/80 p-5 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-3.5">
-                    <img
-                      className="w-12 h-12 rounded-full object-cover shrink-0 border border-zinc-700/60 mt-0.5"
-                      alt={req.developer.name}
-                      src={req.developer.avatar}
-                    />
+                    <AnimalAvatar profileId={req.developer.id} name={req.developer.name} className="mt-0.5 h-12 w-12 shrink-0 border border-zinc-700/60 text-2xl" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold text-white tracking-tight">{req.developer.name}</h4>
@@ -413,11 +406,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-zinc-900/60 border border-transparent hover:border-zinc-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <img
-                        className="w-9 h-9 rounded-full object-cover border border-zinc-700/60"
-                        alt={conn.developer.name}
-                        src={conn.developer.avatar}
-                      />
+                      <AnimalAvatar profileId={conn.developer.id} name={conn.developer.name} className="h-9 w-9 border border-zinc-700/60 text-xl" />
                       <div>
                         <p className="text-xs font-semibold text-white">{conn.developer.name}</p>
                         <p className="text-[11px] text-zinc-400">{conn.status}</p>

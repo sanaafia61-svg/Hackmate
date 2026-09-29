@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface ProfileModalProps {
   user: UserProfile;
+  profileId: string;
   isOpen: boolean;
   onClose: () => void;
   onSave: (updated: UserProfile) => void | Promise<void>;
@@ -10,12 +12,12 @@ interface ProfileModalProps {
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   user,
+  profileId,
   isOpen,
   onClose,
   onSave
 }) => {
   const [name, setName] = useState(user.name);
-  const [avatar, setAvatar] = useState(user.avatar);
   const [skills, setSkills] = useState<string[]>(user.skills);
   const [newSkill, setNewSkill] = useState('');
   const [interests, setInterests] = useState<string[]>(user.interests);
@@ -58,7 +60,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     const updated: UserProfile = {
       ...user,
       name,
-      avatar,
       university,
       githubUrl,
       linkedinUrl,
@@ -92,9 +93,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-[20px]">badge</span>
-          </div>
+          <AnimalAvatar profileId={profileId} name={user.name} className="h-10 w-10 border border-zinc-700 text-xl" />
           <div>
             <h2 className="text-xl font-semibold text-white tracking-tight">Complete Builder Dossier</h2>
             <p className="text-xs text-zinc-400">Keep your public builder profile up to date.</p>
@@ -110,10 +109,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-college">College</label>
               <input id="profile-college" value={university} onChange={(e) => setUniversity(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-avatar">Avatar URL</label>
-              <input id="profile-avatar" type="url" value={avatar} onChange={(e) => setAvatar(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-experience">Experience</label>

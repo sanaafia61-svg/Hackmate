@@ -1,5 +1,6 @@
 import React from 'react';
 import { ConnectionAction, Developer } from '../types';
+import { AnimalAvatar } from './AnimalAvatar';
 
 interface DeveloperDetailModalProps {
   developer: Developer | null;
@@ -35,11 +36,7 @@ export const DeveloperDetailModal: React.FC<DeveloperDetailModalProps> = ({
         {/* Header Profile Info */}
         <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
           <div className="relative">
-            <img
-              src={developer.avatar}
-              alt={developer.name}
-              className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover border border-zinc-700/80"
-            />
+            <AnimalAvatar profileId={developer.id} name={developer.name} className="h-[72px] w-[72px] border border-zinc-700/80 text-5xl sm:h-20 sm:w-20" />
             <span
               className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ring-2 ring-black ${
                 developer.isOnline ? 'bg-emerald-400' : 'bg-zinc-500'
