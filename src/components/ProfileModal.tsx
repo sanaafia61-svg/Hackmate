@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Plus, Save, Trash2, X } from 'lucide-react';
 import { UserProfile } from '../types';
 import { AnimalAvatar } from './AnimalAvatar';
 
@@ -15,7 +16,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   profileId,
   isOpen,
   onClose,
-  onSave
+  onSave,
 }) => {
   const [name, setName] = useState(user.name);
   const [skills, setSkills] = useState<string[]>(user.skills);
@@ -36,14 +37,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   if (!isOpen) return null;
 
   const handleAddSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
+    const skill = newSkill.trim();
+    if (skill && !skills.includes(skill)) {
+      setSkills([...skills, skill]);
       setNewSkill('');
     }
   };
 
-  const handleRemoveSkill = (s: string) => {
-    setSkills(skills.filter((item) => item !== s));
+  const handleRemoveSkill = (skill: string) => {
+    setSkills(skills.filter((item) => item !== skill));
   };
 
   const handleAddInterest = () => {
@@ -70,7 +72,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       skills,
       interests,
       bio,
-      completionPercentage: 0
+      completionPercentage: 0,
     };
     try {
       await onSave(updated);
@@ -83,158 +85,160 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-xl bg-[#0e0f14] border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden text-left">
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[20px]">close</span>
-        </button>
+    <div className="fixed inset-0 z-50 bg-slate-950/50 p-0 sm:p-4">
+      <div className="flex h-full w-full flex-col bg-white sm:mx-auto sm:mt-6 sm:max-h-[92vh] sm:w-full sm:max-w-2xl sm:rounded-[30px] sm:border sm:border-slate-200 sm:shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-5">
+          <div className="flex items-center gap-3">
+            <AnimalAvatar profileId={profileId} name={user.name} className="h-10 w-10 border border-slate-200 text-lg" />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Builder profile</p>
+              <h2 className="text-base font-semibold text-slate-900">Edit details</h2>
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="Close profile editor"
+            onClick={onClose}
+            className="rounded-full border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-        <div className="flex items-center gap-3 mb-6">
-          <AnimalAvatar profileId={profileId} name={user.name} className="h-10 w-10 border border-zinc-700 text-xl" />
-          <div>
-            <h2 className="text-xl font-semibold text-white tracking-tight">Complete Builder Dossier</h2>
-            <p className="text-xs text-zinc-400">Keep your public builder profile up to date.</p>
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+          <div className="space-y-5">
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Basic info</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label htmlFor="profile-full-name" className="mb-1.5 block text-sm font-medium text-slate-700">Name</label>
+                  <input id="profile-full-name" value={name} onChange={(e) => setName(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="profile-college" className="mb-1.5 block text-sm font-medium text-slate-700">College</label>
+                  <input id="profile-college" value={university} onChange={(e) => setUniversity(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Developer info</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="profile-experience" className="mb-1.5 block text-sm font-medium text-slate-700">Experience</label>
+                  <select id="profile-experience" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-slate-400 focus:outline-none">
+                    <option value="">Select experience</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="profile-role" className="mb-1.5 block text-sm font-medium text-slate-700">Preferred role</label>
+                  <input id="profile-role" value={seekingRole} onChange={(e) => setSeekingRole(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <span key={skill} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700">
+                    {skill}
+                    <button type="button" aria-label={`Remove ${skill}`} onClick={() => handleRemoveSkill(skill)} className="text-slate-400 hover:text-red-600">
+                      <Trash2 size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}
+                  placeholder="Add a skill"
+                  className="min-h-[44px] flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+                />
+                <button type="button" onClick={handleAddSkill} className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-3 text-white">
+                  <Plus size={16} />
+                </button>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Interests</h3>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <span key={interest} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700">
+                    {interest}
+                    <button type="button" aria-label={`Remove ${interest}`} onClick={() => setInterests(interests.filter((item) => item !== interest))} className="text-slate-400 hover:text-red-600">
+                      <Trash2 size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={newInterest}
+                  onChange={(e) => setNewInterest(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddInterest(); } }}
+                  placeholder="Add an interest"
+                  className="min-h-[44px] flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+                />
+                <button type="button" onClick={handleAddInterest} className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-3 text-white">
+                  <Plus size={16} />
+                </button>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Links</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="profile-github" className="mb-1.5 block text-sm font-medium text-slate-700">GitHub</label>
+                  <input id="profile-github" type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" placeholder="https://github.com/..." />
+                </div>
+                <div>
+                  <label htmlFor="profile-linkedin" className="mb-1.5 block text-sm font-medium text-slate-700">LinkedIn</label>
+                  <input id="profile-linkedin" type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" placeholder="https://linkedin.com/..." />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">About</h3>
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="min-h-[88px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" placeholder="Tell people what you enjoy building" />
+            </section>
+
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+              <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Hackathon info</h3>
+              <div className="grid gap-3">
+                <div>
+                  <label htmlFor="profile-hackathon-experience" className="mb-1.5 block text-sm font-medium text-slate-700">Hackathon experience</label>
+                  <textarea id="profile-hackathon-experience" rows={2} value={hackathonExperience} onChange={(e) => setHackathonExperience(e.target.value)} className="min-h-[66px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none" />
+                </div>
+                <div>
+                  <label htmlFor="profile-looking-for" className="mb-1.5 block text-sm font-medium text-slate-700">Looking for</label>
+                  <textarea id="profile-looking-for" rows={2} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} className="min-h-[66px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none" />
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 max-h-[60vh] overflow-y-auto pr-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-full-name">Full name</label>
-              <input id="profile-full-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-college">College</label>
-              <input id="profile-college" value={university} onChange={(e) => setUniversity(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-experience">Experience</label>
-              <select id="profile-experience" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500">
-                <option value="">Select experience</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-role">Preferred role</label>
-              <input id="profile-role" value={seekingRole} onChange={(e) => setSeekingRole(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-github">GitHub URL</label>
-              <input id="profile-github" type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-linkedin">LinkedIn URL</label>
-              <input id="profile-linkedin" type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-            </div>
-          </div>
-
-          {/* Core Skills */}
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Verified Skills & Frameworks</label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300"
-                >
-                  <span>{skill}</span>
-                  <button
-                    onClick={() => handleRemoveSkill(skill)}
-                    className="hover:text-red-400 text-zinc-500 cursor-pointer ml-1"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">close</span>
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Add skill (e.g. Docker, GraphQL)..."
-                className="flex-1 px-3 py-1.5 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 font-mono"
-              />
-              <button
-                type="button"
-                onClick={handleAddSkill}
-                className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono rounded-xl cursor-pointer"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Interests</label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {interests.map((interest) => (
-                <span key={interest} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
-                  {interest}
-                  <button type="button" aria-label={`Remove ${interest}`} onClick={() => setInterests(interests.filter((item) => item !== interest))} className="text-zinc-500 hover:text-red-400">
-                    <span className="material-symbols-outlined text-[12px]">close</span>
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input type="text" value={newInterest} onChange={(e) => setNewInterest(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddInterest(); } }} placeholder="Add an interest..." className="flex-1 px-3 py-1.5 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500" />
-              <button type="button" onClick={handleAddInterest} className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono rounded-xl cursor-pointer">Add</button>
-            </div>
-          </div>
-
-          {/* Bio */}
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">Personal Bio & Project Ambition</label>
-            <textarea
-              rows={3}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 leading-relaxed font-sans"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-hackathon-experience">Hackathon experience</label>
-            <textarea id="profile-hackathon-experience" rows={2} value={hackathonExperience} onChange={(e) => setHackathonExperience(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5" htmlFor="profile-looking-for">Looking for</label>
-            <textarea id="profile-looking-for" rows={2} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} className="w-full px-3 py-2 bg-black/60 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-zinc-500" />
-          </div>
-
-        </div>
-
-        <div className="flex items-center justify-between pt-5 border-t border-zinc-800/80 mt-6">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="font-mono text-xs text-zinc-400">
-              Profile Completion: based on your profile details
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-zinc-400 cursor-pointer"
-            >
+        <div className="sticky bottom-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-5">
+          <div className="flex items-center justify-between gap-2">
+            <button type="button" onClick={onClose} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700">
               Cancel
             </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-colors shadow-md cursor-pointer disabled:opacity-60"
-            >
-              {isSaving ? 'Saving...' : 'Save Profile'}
+            <button type="button" onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60">
+              <Save size={15} />
+              {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
+          {saveError && <p className="mt-2 text-right text-xs text-red-600" role="alert">Unable to save profile: {saveError}</p>}
         </div>
-        {saveError && <p className="mt-3 text-right text-xs text-red-400" role="alert">Unable to save profile: {saveError}</p>}
       </div>
     </div>
   );

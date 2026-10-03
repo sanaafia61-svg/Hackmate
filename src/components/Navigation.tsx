@@ -1,5 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import {
+  Bell,
+  ChevronDown,
+  Compass,
+  House,
+  LogOut,
+  Menu,
+  MoonStar,
+  PencilLine,
+  SunMedium,
+  UserRound,
+  Users,
+  X,
+} from 'lucide-react';
 import { UserProfile } from '../types';
 import type { AuthMode } from './AuthModal';
 import { AnimalAvatar } from './AnimalAvatar';
@@ -38,11 +51,11 @@ export const Navigation: React.FC<NavigationProps> = ({
   unreadCount = 2,
   onOpenTeammatesSearch,
   theme,
-  onToggleTheme
+  onToggleTheme,
 }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -59,333 +72,285 @@ export const Navigation: React.FC<NavigationProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const navItems = [
+    { id: 'dashboard', label: 'Home', icon: House },
+    { id: 'discover', label: 'Discover', icon: Compass },
+    { id: 'connections', label: 'Connections', icon: Users },
+    { id: 'profile', label: 'Profile', icon: UserRound },
+  ] as const;
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#070709]/85 backdrop-blur-xl border-b border-white/[0.08] transition-colors">
-      <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Left Zone: Brand & Primary Nav */}
-        <div className="flex items-center gap-8">
+    <>
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl md:border-slate-200/80 md:bg-[#f8fafb]/90">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <button
-            onClick={() => setCurrentView('landing')}
-            className="flex items-center gap-2.5 focus:outline-none group text-left cursor-pointer"
+            onClick={() => setCurrentView('dashboard')}
+            type="button"
+            className="flex items-center gap-2.5 text-left"
+            aria-label="Go to dashboard"
           >
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center p-1 text-white shadow-inner group-hover:border-zinc-500 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 32 32">
-                <path d="M9 9L15 16L9 23" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
-                <circle cx="21" cy="16" fill="#ffffff" r="2.5" />
-                <path d="M15 24H23" stroke="#a1a1aa" strokeLinecap="round" strokeWidth="2" />
-              </svg>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+              <span className="text-[10px] font-bold tracking-[0.2em]">HM</span>
             </div>
-            <span className="font-semibold text-lg tracking-tight text-white group-hover:text-zinc-300 transition-colors">
-              Hack<span className="text-zinc-400 font-normal">Mate</span>
-            </span>
+            <div className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+              Hack<span className="font-medium text-slate-500">Mate</span>
+            </div>
           </button>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 font-mono text-xs tracking-wider uppercase text-zinc-400">
-            <button
-              onClick={() => setCurrentView('landing')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                currentView === 'landing'
-                  ? 'text-white font-medium bg-zinc-900 border border-zinc-800'
-                  : 'hover:text-white hover:bg-zinc-900/50'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setCurrentView('dashboard')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                currentView === 'dashboard'
-                  ? 'text-white font-medium bg-zinc-900 border border-zinc-800'
-                  : 'hover:text-white hover:bg-zinc-900/50'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setCurrentView('discover')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                currentView === 'discover'
-                  ? 'text-white font-medium bg-zinc-900 border border-zinc-800'
-                  : 'hover:text-white hover:bg-zinc-900/50'
-              }`}
-            >
-              Discover
-            </button>
-            <button
-              onClick={() => setCurrentView('connections')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                currentView === 'connections'
-                  ? 'text-white font-medium bg-zinc-900 border border-zinc-800'
-                  : 'hover:text-white hover:bg-zinc-900/50'
-              }`}
-            >
-              Connections
-            </button>
-            <button
-              onClick={() => setCurrentView('profile')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                currentView === 'profile'
-                  ? 'text-white font-medium bg-zinc-900 border border-zinc-800'
-                  : 'hover:text-white hover:bg-zinc-900/50'
-              }`}
-            >
-              My Profile
-            </button>
+          <nav className="hidden items-center gap-1 md:flex">
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setCurrentView(id as 'dashboard' | 'discover' | 'connections' | 'profile')}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium transition-colors ${
+                  currentView === id
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
           </nav>
-        </div>
 
-        {/* Right Zone: Primary Actions, Notifications, Profile */}
-        <div className="flex items-center gap-3">
-          <button
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700/70 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
-            onClick={onToggleTheme}
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            type="button"
-          >
-            {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
-          </button>
-
-          {/* Find Teammates Button */}
-          <button
-            onClick={() => {
-              if (onOpenTeammatesSearch) {
-                onOpenTeammatesSearch();
-              } else {
-                setCurrentView('discover');
-              }
-            }}
-            type="button"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-zinc-200 transition-all active:scale-[0.98] shadow-sm shadow-white/10 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[15px]">person_search</span>
-            <span>Find Teammates</span>
-          </button>
-
-          {/* Notifications Dropdown */}
-          <div className="relative" ref={notifRef}>
+          <div className="ml-auto flex items-center gap-2">
             <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              aria-label="Notifications"
-              className="relative p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition-all focus:outline-none cursor-pointer"
               type="button"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              onClick={onToggleTheme}
+              className="hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-100 md:inline-flex"
             >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse"></span>
-              )}
+              {theme === 'light' ? <MoonStar size={16} /> : <SunMedium size={16} />}
             </button>
 
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#0e0f14] border border-zinc-800 p-4 shadow-2xl z-50 text-left">
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-white font-mono uppercase tracking-wider">Connection Requests</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 font-mono text-[10px]">
-                      {unreadCount} New
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="text-zinc-500 hover:text-zinc-300 text-xs font-mono"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto">
-                  {incomingRequestNames.length > 0 ? incomingRequestNames.map((name) => (
+            <div className="relative" ref={notifRef}>
+              <button
+                type="button"
+                aria-label="Notifications"
+                onClick={() => setShowNotifications((value) => !value)}
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-100"
+              >
+                <Bell size={16} />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white" />
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl md:w-80">
+                  <div className="mb-2 flex items-center justify-between border-b border-slate-200 pb-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Requests</p>
                     <button
-                      key={name}
-                      onClick={() => {
-                        setCurrentView('connections');
-                        setShowNotifications(false);
-                      }}
-                      className="rounded-xl border border-zinc-800/60 bg-zinc-900/70 p-2.5 text-left text-xs text-white hover:border-zinc-700"
                       type="button"
+                      onClick={() => setShowNotifications(false)}
+                      className="text-[11px] text-slate-500 hover:text-slate-900"
                     >
-                      {name} sent you a connection request.
+                      Close
                     </button>
-                  )) : <p className="p-2 text-xs text-zinc-400">No incoming connection requests.</p>}
+                  </div>
+                  <div className="space-y-2">
+                    {incomingRequestNames.length > 0 ? (
+                      incomingRequestNames.map((name) => (
+                        <button
+                          key={name}
+                          type="button"
+                          onClick={() => {
+                            setCurrentView('connections');
+                            setShowNotifications(false);
+                          }}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-left text-xs text-slate-700"
+                        >
+                          {name} sent you a connection request.
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-1 py-2 text-xs text-slate-500">No incoming requests.</p>
+                    )}
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {isAuthenticated ? (
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  aria-label="Open profile menu"
+                  onClick={() => setShowProfileMenu((value) => !value)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-1.5 py-1 text-left shadow-sm"
+                >
+                  <AnimalAvatar profileId={profileId} name={user.name} className="h-8 w-8 border border-slate-200 text-sm" />
+                  <ChevronDown size={14} className="text-slate-500 md:inline-flex" />
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                    <div className="border-b border-slate-200 px-3 py-2">
+                      <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                      <p className="mt-0.5 break-all text-[11px] text-slate-500">{userEmail}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEditProfile();
+                        setShowProfileMenu(false);
+                      }}
+                      className="mt-2 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                    >
+                      <PencilLine size={15} />
+                      Edit profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentView('profile');
+                        setShowProfileMenu(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                    >
+                      <UserRound size={15} />
+                      View profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSignOut();
+                        setShowProfileMenu(false);
+                      }}
+                      className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut size={15} />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="hidden items-center gap-2 md:flex">
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('login')}
+                  className="rounded-full px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('signup')}
+                  className="rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
+                >
+                  Sign up
+                </button>
               </div>
             )}
-          </div>
 
-          {!isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <button
-                className="rounded-full px-3 py-1.5 font-mono text-xs text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"
-                onClick={() => onOpenAuth('login')}
-                type="button"
-              >
-                Sign in
-              </button>
-              <button
-                className="rounded-full bg-white px-3.5 py-1.5 font-mono text-xs font-semibold text-black transition-colors hover:bg-zinc-200"
-                onClick={() => onOpenAuth('signup')}
-                type="button"
-              >
-                Sign up
-              </button>
-            </div>
-          ) : (
-          /* Profile Menu Dropdown */
-          <div className="relative" ref={menuRef}>
-            <div
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center gap-1.5 pl-2 py-1 rounded-full hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition-all cursor-pointer"
+            <button
+              type="button"
+              aria-label={showMobileMenu ? 'Close menu' : 'Open menu'}
+              aria-expanded={showMobileMenu}
+              onClick={() => setShowMobileMenu((value) => !value)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 md:hidden"
             >
-              <div className="relative">
-                <AnimalAvatar profileId={profileId} name={user.name} className="h-8 w-8 border border-zinc-700/60 text-lg" />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-black"></span>
-              </div>
-              <span className="material-symbols-outlined text-[16px] text-zinc-400">
-                keyboard_arrow_down
-              </span>
-            </div>
+              {showMobileMenu ? <X size={17} /> : <Menu size={17} />}
+            </button>
+          </div>
+        </div>
+      </header>
 
-            {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0e0f14] border border-zinc-800 p-2 shadow-2xl z-50 font-sans">
-                <div className="px-3 py-2 border-b border-zinc-800/70 mb-1">
-                  <p className="text-xs font-semibold text-white">{user.name}</p>
-                  <p className="text-[11px] text-zinc-400 font-mono break-all">{userEmail}</p>
-                </div>
+      {showMobileMenu && (
+        <div className="fixed inset-x-0 top-14 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-b border-slate-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-xl md:hidden">
+          <div className="mx-auto flex max-w-md flex-col gap-1">
+            {([
+              ['landing', 'Overview'],
+              ['dashboard', 'Home'],
+              ['discover', 'Discover'],
+              ['connections', 'Connections'],
+              ['profile', 'Profile'],
+            ] as const).map(([view, label]) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => {
+                  setCurrentView(view);
+                  setShowMobileMenu(false);
+                }}
+                className="rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-100"
+              >
+                {label}
+              </button>
+            ))}
+            {isAuthenticated ? (
+              <>
                 <button
+                  type="button"
                   onClick={() => {
                     onEditProfile();
-                    setShowProfileMenu(false);
+                    setShowMobileMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
+                  className="rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-100"
                 >
-                  <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
-                  <span>Edit Profile</span>
+                  Edit profile
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
-                    setCurrentView('profile');
-                    setShowProfileMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                  <span>My Profile ({user.completionPercentage}%)</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setCurrentView('dashboard');
-                    setShowProfileMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">dashboard</span>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setCurrentView('landing');
-                    setShowProfileMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">public</span>
-                  <span>Public Landing Page</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowProfileMenu(false);
                     onSignOut();
+                    setShowMobileMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/70 transition-colors flex items-center gap-2 cursor-pointer"
+                  className="rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
                 >
-                  <span className="material-symbols-outlined text-[16px]">logout</span>
-                  <span>Sign out</span>
+                  Sign out
                 </button>
-                <div className="h-px bg-zinc-800 my-1"></div>
-                <div className="px-3 py-1.5 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>HackMate Account</span>
-                </div>
+              </>
+            ) : (
+              <div className="flex gap-2 border-t border-slate-200 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenAuth('login');
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex-1 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenAuth('signup');
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex-1 rounded-xl bg-slate-900 px-3 py-2.5 text-left text-sm font-semibold text-white"
+                >
+                  Sign up
+                </button>
               </div>
             )}
           </div>
-          )}
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-zinc-400 hover:text-white rounded-lg focus:outline-none"
-            aria-label="Toggle menu"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {mobileMenuOpen ? 'close' : 'menu'}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#09090c] border-b border-zinc-800 px-6 py-4 flex flex-col gap-3 font-mono text-xs">
-          {isAuthenticated && <div className="border-b border-zinc-800 pb-3 text-zinc-400 break-all">{userEmail}</div>}
-          <button
-            onClick={() => {
-              setCurrentView('landing');
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2 text-zinc-300 hover:text-white"
-          >
-            Overview / Landing
-          </button>
-          <button
-            onClick={() => {
-              setCurrentView('dashboard');
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2 text-zinc-300 hover:text-white"
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => {
-              setCurrentView('discover');
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2 text-zinc-300 hover:text-white"
-          >
-            Discover Developers
-          </button>
-          <button
-            onClick={() => {
-              setCurrentView('connections');
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2 text-zinc-300 hover:text-white"
-          >
-            Connections
-          </button>
-          <button
-            onClick={() => {
-              setCurrentView('profile');
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2 text-zinc-300 hover:text-white"
-          >
-            My Profile
-          </button>
-          {isAuthenticated ? (
-            <>
-              <button onClick={() => { onEditProfile(); setMobileMenuOpen(false); }} className="text-left py-2 text-zinc-300 hover:text-white">Edit Profile</button>
-              <button onClick={() => { onSignOut(); setMobileMenuOpen(false); }} className="text-left py-2 text-zinc-300 hover:text-white">Sign out</button>
-            </>
-          ) : (
-            <div className="flex gap-3 border-t border-zinc-800 pt-3">
-              <button onClick={() => { onOpenAuth('login'); setMobileMenuOpen(false); }} className="py-2 text-zinc-300 hover:text-white">Sign in</button>
-              <button onClick={() => { onOpenAuth('signup'); setMobileMenuOpen(false); }} className="py-2 text-zinc-300 hover:text-white">Sign up</button>
-            </div>
-          )}
         </div>
       )}
-    </header>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-xl md:hidden">
+        <div className="mx-auto flex max-w-md items-center justify-around px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2">
+          {navItems.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              aria-label={label}
+              onClick={() => setCurrentView(id as 'dashboard' | 'discover' | 'connections' | 'profile')}
+              className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors ${
+                currentView === id ? 'text-slate-900' : 'text-slate-500'
+              }`}
+            >
+              <Icon size={19} className={currentView === id ? 'text-slate-900' : 'text-slate-500'} />
+              <span>{label}</span>
+              {currentView === id && <span className="h-1 w-5 rounded-full bg-slate-900" aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 };

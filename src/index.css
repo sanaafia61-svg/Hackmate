@@ -20,27 +20,89 @@
     --color-zinc-800: #e0e4e7;
     --color-zinc-900: #eff1f3;
     --color-zinc-950: #f7f8f9;
-    --color-emerald-50: #064e3b;
-    --color-emerald-100: #065f46;
-    --color-emerald-200: #047857;
-    --color-emerald-300: #047857;
-    --color-emerald-400: #047857;
-    --color-emerald-500: #059669;
-    --color-emerald-600: #10b981;
-    --color-emerald-700: #34d399;
-    --color-emerald-800: #a7f3d0;
-    --color-emerald-900: #d1fae5;
-    --color-emerald-950: #ecfdf5;
-    --color-red-300: #b91c1c;
-    --color-red-400: #b91c1c;
-    --color-red-900: #fecaca;
+    --color-emerald-50: #ecfdf5;
+    --color-emerald-100: #d1fae5;
+    --color-emerald-200: #a7f3d0;
+    --color-emerald-300: #6ee7b7;
+    --color-emerald-400: #34d399;
+    --color-emerald-500: #10b981;
+    --color-emerald-600: #059669;
+    --color-emerald-700: #047857;
+    --color-emerald-800: #065f46;
+    --color-emerald-900: #064e3b;
+    --color-emerald-950: #022c22;
+    --color-red-300: #fca5a5;
+    --color-red-400: #f87171;
+    --color-red-900: #7f1d1d;
     --color-amber-400: #a16207;
   }
 
+  * {
+    box-sizing: border-box;
+  }
+
   html, body {
+    margin: 0;
+    min-height: 100%;
     background-color: var(--color-background);
     color: var(--color-zinc-50);
     font-family: var(--font-geist);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible {
+    outline: 2px solid rgba(16, 185, 129, 0.55);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    html,
+    body {
+      font-size: 15px;
+    }
+
+    h1 {
+      font-size: clamp(1.65rem, 8vw, 2.2rem);
+    }
+
+    h2 {
+      font-size: clamp(1.1rem, 5vw, 1.5rem);
+    }
+
+    body {
+      line-height: 1.5;
+    }
   }
 
   html[data-theme='dark'] {
@@ -76,6 +138,20 @@
     --color-red-900: #7f1d1d;
     --color-amber-400: #fbbf24;
   }
+
+  img,
+  svg,
+  button,
+  input,
+  textarea,
+  select {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    text-decoration: none;
+  }
 }
 
 [data-theme='light'] [class*='bg-[#050507]'] { background-color: #f5f6f7; }
@@ -106,7 +182,6 @@
   vertical-align: middle;
 }
 
-/* Custom subtle scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

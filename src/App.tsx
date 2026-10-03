@@ -349,8 +349,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050507] text-[#e3e1ec] font-sans flex flex-col selection:bg-zinc-800 selection:text-white">
-      {/* Top Navigation */}
+    <div className="min-h-screen bg-[var(--color-background)] text-slate-900 antialiased flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
       <Navigation
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -368,8 +367,7 @@ export default function App() {
         onToggleTheme={() => setTheme((currentTheme) => currentTheme === 'light' ? 'dark' : 'light')}
       />
 
-      {/* Main View Router */}
-      <main className="flex-1 w-full flex flex-col">
+      <main className="flex-1 w-full flex flex-col pb-[5.75rem] md:pb-0">
         {authUser && profileStatus === 'loading' && (
           <div className="mx-auto mt-20 w-full max-w-5xl px-4 text-sm text-zinc-400" role="status">
             Loading your profile...

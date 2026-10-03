@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowUpRight, Github, Linkedin, PencilLine, Sparkles } from 'lucide-react';
 import { UserProfile } from '../types';
 import { AnimalAvatar } from './AnimalAvatar';
 
@@ -13,109 +14,110 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   user,
   profileId,
   onEditProfile,
-  onBrowseMatches
+  onBrowseMatches,
 }) => {
   return (
-    <div className="w-full pt-20 pb-16 bg-background min-h-[calc(100vh-64px)] max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-8 pt-4">
-        {/* Profile Header Dossier */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#0c0d12] border border-zinc-800/80 p-6 sm:p-10 shadow-2xl">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-8 border-b border-zinc-800/70">
-            <div className="flex items-center gap-5">
-              <div className="relative">
-                <AnimalAvatar profileId={profileId} name={user.name} className="h-20 w-20 border-2 border-zinc-700/80 text-5xl shadow-md sm:h-24 sm:w-24" />
-                <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-4 ring-[#0c0d12]"></span>
-              </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">{user.name}</h1>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 font-mono text-xs">
-                    {user.completionPercentage}% Complete
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-zinc-400 font-mono mt-1">
-                  {user.university || 'Add your college'}
-                </p>
-              </div>
+    <div className="mx-auto w-full max-w-5xl px-4 pb-20 pt-20 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-4">
+        <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <div className="flex items-start gap-3">
+            <div className="relative shrink-0">
+              <AnimalAvatar profileId={profileId} name={user.name} className="h-20 w-20 border border-slate-200 text-4xl" />
+              <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
             </div>
 
-            <div className="flex items-center gap-2.5 self-start sm:self-auto">
-              <button
-                onClick={onEditProfile}
-                className="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer"
-              >
-                Edit Dossier
-              </button>
-              <button
-                onClick={onBrowseMatches}
-                className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 font-mono text-xs transition-colors cursor-pointer"
-              >
-                View Matches
-              </button>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Developer profile</p>
+              <h1 className="mt-1 text-[1.7rem] font-semibold tracking-[-0.05em] text-slate-900 sm:text-[2.1rem]">{user.name}</h1>
+              <p className="mt-1 text-sm text-slate-500">{user.university || 'Add your college'}</p>
+              <p className="mt-0.5 text-xs text-slate-400">{user.experienceLevel || 'Add your experience'} • {user.completionPercentage}% complete</p>
             </div>
+
+            <button
+              type="button"
+              onClick={onEditProfile}
+              className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-medium text-white"
+            >
+              <PencilLine size={14} />
+              Edit
+            </button>
           </div>
+        </section>
 
-          {/* Dossier Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
-            <div className="space-y-4">
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500">Hackathon Experience</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-sm font-semibold text-white">{user.hackathonExperience || 'Not added yet'}</p>
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Desired Squad Role</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-sm font-semibold text-white">{user.seekingRole || 'No preferred role selected'}</p>
-              </div>
-            </div>
-
-            <div className="md:col-span-2 space-y-4">
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500">Skills & Tech Stack</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-wrap gap-2">
-                {user.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 rounded-md bg-zinc-900 border border-zinc-700/80 font-mono text-xs text-zinc-200"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {user.skills.length === 0 && <span className="text-xs text-zinc-500">No skills added yet.</span>}
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Interests</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-wrap gap-2">
-                {user.interests.length > 0 ? user.interests.map((interest) => (
-                  <span key={interest} className="px-3 py-1 rounded-md bg-zinc-900 border border-zinc-700/80 font-mono text-xs text-zinc-200">{interest}</span>
-                )) : <span className="text-xs text-zinc-500">No interests added yet.</span>}
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Experience</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-xs sm:text-sm text-zinc-300">{user.experienceLevel || 'Not specified'}</p>
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">About & Bio</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans">{user.bio || 'No bio added yet.'}</p>
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Looking for</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{user.lookingFor || 'Add what kind of teammates or projects you are looking for.'}</p>
-              </div>
-
-              <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 pt-2">Links</h3>
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-wrap gap-4 text-xs">
-                {user.githubUrl && <a className="text-zinc-200 hover:text-white underline" href={user.githubUrl} target="_blank" rel="noreferrer">GitHub</a>}
-                {user.linkedinUrl && <a className="text-zinc-200 hover:text-white underline" href={user.linkedinUrl} target="_blank" rel="noreferrer">LinkedIn</a>}
-                {!user.githubUrl && !user.linkedinUrl && <span className="text-zinc-500">No links added yet.</span>}
-              </div>
-            </div>
+        <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-900">About</h2>
+            <button type="button" onClick={onBrowseMatches} className="text-sm font-medium text-slate-700">Browse matches</button>
           </div>
+          <p className="text-sm leading-6 text-slate-600">{user.bio || 'No bio added yet.'}</p>
+        </section>
+
+        <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <h2 className="mb-3 text-base font-semibold text-slate-900">Skills</h2>
+          <div className="flex flex-wrap gap-2">
+            {user.skills.length > 0 ? (
+              user.skills.map((skill) => (
+                <span key={skill} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700">{skill}</span>
+              ))
+            ) : (
+              <span className="text-sm text-slate-500">No skills added yet.</span>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <h2 className="mb-3 text-base font-semibold text-slate-900">Interests</h2>
+          <div className="flex flex-wrap gap-2">
+            {user.interests.length > 0 ? (
+              user.interests.map((interest) => (
+                <span key={interest} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700">{interest}</span>
+              ))
+            ) : (
+              <span className="text-sm text-slate-500">No interests added yet.</span>
+            )}
+          </div>
+        </section>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+            <h2 className="mb-3 text-base font-semibold text-slate-900">Looking for</h2>
+            <p className="text-sm text-slate-600">{user.lookingFor || 'Not specified'}</p>
+          </section>
+
+          <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+            <h2 className="mb-3 text-base font-semibold text-slate-900">Experience</h2>
+            <p className="text-sm text-slate-600">{user.hackathonExperience || 'Not added yet'}</p>
+          </section>
         </div>
+
+        <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <h2 className="mb-3 text-base font-semibold text-slate-900">Links</h2>
+          <div className="flex flex-wrap gap-2">
+            {user.githubUrl ? (
+              <a href={user.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                <Github size={14} />
+                GitHub
+                <ArrowUpRight size={14} />
+              </a>
+            ) : null}
+            {user.linkedinUrl ? (
+              <a href={user.linkedinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                <Linkedin size={14} />
+                LinkedIn
+                <ArrowUpRight size={14} />
+              </a>
+            ) : null}
+            {!user.githubUrl && !user.linkedinUrl && <span className="text-sm text-slate-500">No links added yet.</span>}
+          </div>
+        </section>
+
+        <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <div className="flex items-center gap-2">
+            <Sparkles size={15} className="text-slate-900" />
+            <h2 className="text-base font-semibold text-slate-900">Build profile</h2>
+          </div>
+          <p className="mt-2 text-sm text-slate-500">Keep your public profile sharp with your current role, interest, and project focus.</p>
+        </section>
       </div>
     </div>
   );
